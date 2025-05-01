@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTF Inventory Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+      <h1>Inventory Value Calculator</h1>
+  
+      <div class="file-upload">
+        <label for="imageUpload" class="file-label">Choose Images</label>
+        <input type="file" id="imageUpload" accept="image/*" multiple>
+        <span id="fileCount">No files chosen</span>
+      </div>
+      
+      <button id="processButton">Calculate</button>
+      <div id="errorMessage" style="color: #ff4444; font-size: 14px; margin-top: 8px; text-align: center; opacity: 0; transition: opacity 0.3s ease;"></div>
+      <div id="results">
+        <!-- Results will appear here -->
+      </div>
+      
+      <div id="itemListPrompt" style="display: none;">
+        <p class="prompt-text">Would you like to see the list of extracted items?</p>
+        <div class="prompt-buttons">
+            <button class="prompt-btn yes-btn">✓</button>
+            <button class="prompt-btn no-btn">✕</button>
+        </div>
+    </div>
+</div>
+    <script src="app.js"></script>
+</body>
+</html>
+

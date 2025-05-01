@@ -1,0 +1,278 @@
+/* Global Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Background and fonts */
+  body {
+    background: linear-gradient(135deg, #27004a 0%, #1a0033 100%);
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.container-wrapper {
+    width: 100%;
+    justify-content: space-between; /* Change to space-between */
+    align-items: flex-start;
+    display: flex;
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+    padding: 0 2rem; /* Add padding to keep containers from touching edges */
+}
+
+.container, .second-container {
+    background: linear-gradient(160deg, #400078 0%, #2d0054 100%);
+    padding: 40px;
+    border-radius: 16px;
+    flex: 0 0 calc(50% - 1rem); /* Set to exactly half minus gap */
+    max-width: none; /* Remove max-width constraint */
+    min-height: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+/* Modify slide animation */
+.container.slide-left {
+    transform: translateX(0); /* Keep in view, just shifted left */
+}
+
+.second-container {
+    transform: translateX(100%); /* Start from right */
+    opacity: 0;
+    height: 600px; /* Set a fixed height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Hide horizontal scrolling */
+    padding: 20px; /* Add some padding */
+}
+
+.second-container.show {
+    transform: translateX(0); /* Slide to right position */
+    opacity: 1;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.file-upload {
+    text-align: center;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.file-label {
+    background: linear-gradient(90deg, #5400b5 0%, #6a1ee0 100%) !important;
+    color: rgb(255, 255, 255);
+    padding: 14px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: inline-block;
+    transition: all 0.3s ease;
+    width: 160px;  /* Match processButton width */
+    text-align: center;
+}
+
+.file-label:hover {
+    background: linear-gradient(90deg, #6a1ee0 0%, #7c34f5 100%) !important;
+}
+
+#imageUpload {
+    display: none;
+}
+
+#fileCount {
+    display: block;
+    margin-top: 12px;
+    color: #fffcfcee;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    width: 100%;
+}
+
+h1 {
+    color: #ffffff;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    width: 100%; /* Ensure full width */
+    text-align: center; /* Center the text */
+}
+  
+  /* Button */
+  #processButton {
+    background: linear-gradient(90deg, #5400b5 0%, #6a1ee0 100%) !important;
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 2rem;
+    transition: all 0.3s ease;
+    width: 160px;  /* Fixed width to match Choose Images button */
+    display: block;
+    margin: 2rem auto 0;
+}
+  
+  #processButton:hover {
+    background: linear-gradient(90deg, #6a1ee0 0%, #7c34f5 100%) !important;
+}
+
+#processButton:disabled {
+    pointer-events: none;
+    background: linear-gradient(90deg, #5400b5 0%, #6a1ee0 100%) !important;
+    opacity: 0.5;
+}
+  
+  /* Results section */
+  #results {
+    margin-top: 40px;
+    padding: 25px;
+    background: none;
+    border: solid #6400c1;
+    border-width: 2px;
+    border-radius: 15px;
+    min-height: 80px;
+    font-size: 16px;
+    color: white;
+    line-height: 1.6;
+    display: none; /* Keep results hidden by default */
+    opacity: 0;
+}
+
+#results.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Prompt Section */
+#itemListPrompt {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.prompt-text {
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.prompt-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.prompt-btn {
+    width: 50px;  /* Make it square */
+    height: 50px;  /* Make it square */
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.yes-btn {
+    background: linear-gradient(135deg, #00e787 0%, #00945e 100%);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.no-btn {
+    background: linear-gradient(135deg, #ff0000 0%, #8e1f1ffe 100%);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.prompt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.yes-btn:hover {
+    background: linear-gradient(135deg, #00feba 0%, #169767 100%);
+}
+
+.no-btn:hover {
+    background: linear-gradient(135deg, #ff4f4f 0%, #b60000fe 100%);
+}
+
+.results-table {
+    width: 100%; /* Make the table take the full width of the container */
+    border: 1px solid #6400c1; /* Add a border around cells */
+    border-collapse: separate; /* Allow spacing between borders for rounded corners */
+    border-spacing: 0; /* Remove gaps between cells */
+    table-layout: fixed; /* Ensure columns are evenly distributed */
+    background: linear-gradient(135deg, #2d0054 0%, #400078 100%); /* Add a gradient background */
+    border-radius: 20px; /* Round the corners of the table */
+    overflow: hidden; /* Ensure content stays within rounded corners */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+}
+
+.results-table th,
+.results-table td {
+    color: #ffffff; /* Text color for table cells */
+    border: 1px solid #6400c1; /* Add a border around cells */
+    padding: 10px; /* Add padding inside cells */
+    text-align: center; /* Center-align text */
+    word-wrap: break-word; /* Ensure long text wraps within cells */
+}
+
+/* Adjust column widths */
+.results-table th:nth-child(1),
+.results-table td:nth-child(1) {
+    width: 12%; /* No. column */
+}
+
+.results-table th:nth-child(2),
+.results-table td:nth-child(2) {
+    width: 40%; /* Item Name column */
+}
+
+.results-table th:nth-child(3),
+.results-table td:nth-child(3) {
+    width: 13%; /* Quantity column */
+}
+
+.results-table th:nth-child(4),
+.results-table td:nth-child(4) {
+    width: 15%; /* Item Value column */
+}
+
+.results-table th:nth-child(5),
+.results-table td:nth-child(5) {
+    width: 20%; /* Total Item Value column */
+}
+.results-table th {
+    background: #2d0054; /* Keep the solid background for the header */
+    color: #00ffff; /* Header text color */
+    font-weight: bold; /* Make header text bold */
+    text-align: center; /* Center-align header text */
+    top: 0; /* Stick to the top of the container */
+    z-index: 1; /* Ensure it stays above other content */
+}
+
+.results-table tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.05); /* Add a subtle background for even rows */
+}
+
+.results-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Highlight row on hover */
+}
+
+
+
