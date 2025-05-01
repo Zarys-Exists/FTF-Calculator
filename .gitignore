@@ -1,0 +1,21 @@
+# Node dependencies
+node_modules/
+
+# VS Code settings
+.vscode/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Windows folder config
+desktop.ini
