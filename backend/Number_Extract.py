@@ -52,7 +52,10 @@ def create_corner_mask(image, boxes, corner_percentage):
 def multi_preprocess_and_extract(enhanced_image, boxes, corner_percentage, debug=False):
     """
     Extract OCR results from the enhanced image and assign to boxes.
-    Save OCR output in the debug file if debug is enabled.
+    Processes numbers with the following rules:
+    - Empty boxes get value '1'
+    - Removes whitespace and non-digit characters
+    - Caps values at 10
     """
     # Initialize box_texts dictionary
     box_texts = {box["box_number"]: [] for box in boxes}
@@ -89,7 +92,16 @@ def multi_preprocess_and_extract(enhanced_image, boxes, corner_percentage, debug
             # Remove 'x' characters and keep only digits
             cleaned_text = ''.join(char for char in combined_text if char.isdigit())
             # If box is empty or has no digits, set to '1'
-            combined_box_texts[box_number] = cleaned_text if cleaned_text else '1'
+            if not cleaned_text:
+                cleaned_text = '1'
+            else:
+                # Convert to integer and cap at 10
+                number = int(cleaned_text)
+                if number > 10:
+                    number = 10
+                cleaned_text = str(number)
+            
+            combined_box_texts[box_number] = cleaned_text
             
         # Save OCR results if debug is enabled
         if debug:
