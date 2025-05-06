@@ -19,19 +19,43 @@ def resize_image(image, target_width, target_height):
     return cv2.resize(image, (target_width, target_height), interpolation=cv2.INTER_LINEAR)
 
 def enhance_image(image):
-    """Enhance contrast and sharpness of the image."""
-    upscale_factor = 2
-    image = cv2.resize(image, (0, 0), fx=upscale_factor, fy=upscale_factor, interpolation=cv2.INTER_CUBIC)
+    """Basic image preprocessing that converts to grayscale and applies thresholding."""
+    # Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-    enhanced = clahe.apply(gray)
-    _, binary = cv2.threshold(enhanced, 127, 255, cv2.THRESH_BINARY)
-    kernel = np.ones((2, 2), np.uint8)
-    binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
-    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-    return cv2.filter2D(binary, -1, kernel)
+    
+    # Apply threshold to get clear black and white image
+    _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+    
+    # Clean up with morphological operations
+    kernel = np.ones((2,2), np.uint8)
+    binary = cv2.morphologyEx(binary, kernel, cv2.MORPH_CLOSE)
+    
+    return binary
 
-def match_items(lines, items, threshold=68, debug=False):
+def normalize_text(text):
+    """Replace special characters with their closest English equivalents."""
+    char_map = {
+        '£': 'E',
+        '$': 'S',
+        '€': 'E',
+        '¥': 'Y',
+        '§': 'S',
+        '©': 'C',
+        '®': 'R',
+        '™': 'TM',
+        '¡': 'i',
+    }
+    
+    normalized = ''
+    for char in text:
+        # Replace special chars or keep alphanumeric
+        if char in char_map:
+            normalized += char_map[char]
+        elif char.isalnum() or char.isspace():
+            normalized += char
+    return normalized
+
+def match_items(lines, items, threshold=60, debug=False):
     """Match extracted lines against item names using perfect and fuzzy matching."""
     found_items = []
     matched_items = set()  # Track already matched items to avoid duplicates
@@ -83,6 +107,9 @@ def resolve_tie(line, tied_items):
 
 def process_text_inventory(image_path, row_percentage=33.33, col_percentages=None, debug=False):
     """Process inventory image and extract items."""
+    # Add constant for bottom area
+    BOTTOM_AREA_PERCENTAGE = 18
+
     items = load_items()
     if debug:
         print(f"Loaded items from JSON: {items}")
@@ -116,61 +143,93 @@ def process_text_inventory(image_path, row_percentage=33.33, col_percentages=Non
     col_positions = [0] + col_positions + [width]
     row_positions = [0] + row_positions + [height]
     
-    # Generate boxes
+    # Generate boxes and create mask
     boxes = []
+    mask = np.zeros_like(resized_image)  # Start with black mask
+    
     box_number = 1
-    for i in range(len(row_positions) - 1):  # Iterate over rows
-        for j in range(len(col_positions) - 1):  # Iterate over columns
-            top_left = (col_positions[j], row_positions[i])
-            bottom_right = (col_positions[j + 1], row_positions[i + 1])
-            boxes.append({"box_number": box_number, "top_left": top_left, "bottom_right": bottom_right})
+    for i in range(len(row_positions) - 1):
+        for j in range(len(col_positions) - 1):
+            box_top = row_positions[i]
+            box_bottom = row_positions[i + 1]
+            box_height = box_bottom - box_top
+            
+            # Calculate bottom area for text extraction
+            text_area_height = int(box_height * (BOTTOM_AREA_PERCENTAGE / 100))
+            text_area_top = box_bottom - text_area_height
+            
+            # Store BOTH full box and text area info - important for Number_Extract alignment
+            box_info = {
+                "box_number": box_number,
+                "top_left": (col_positions[j], box_top),
+                "bottom_right": (col_positions[j + 1], box_bottom),
+                "text_area_top": text_area_top,
+                "text_area_bottom": box_bottom
+            }
+            boxes.append(box_info)
+            
+            # Make only text area visible in mask
+            mask[text_area_top:box_bottom, col_positions[j]:col_positions[j + 1]] = [255, 255, 255]
             box_number += 1
+
+    # Apply mask before yellow text detection
+    masked_image = cv2.bitwise_and(resized_image, mask)
     
-    total_boxes = box_number - 1  # Store the actual number of boxes
-    
-    # Draw grid lines if debug is enabled
     if debug:
-        grid_image = resized_image.copy()
-        
-        # Draw and label boxes
+        # Save both full grid and text areas for debugging
+        debug_image = resized_image.copy()
         for box in boxes:
-            top_left = box["top_left"]
-            bottom_right = box["bottom_right"]
-            
-            # Draw the rectangle
-            cv2.rectangle(grid_image, top_left, bottom_right, (255, 0, 0), 2)
-            
-            # Label the box with its number
-            label_position = (top_left[0] + 10, top_left[1] + 30)
-            cv2.putText(grid_image, str(box["box_number"]), label_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        
-        # Save the grid image for visualization
-        grid_output_path = "grid_with_boxes.png"
-        cv2.imwrite(grid_output_path, grid_image)
-        print(f"\nGrid with boxes saved at {grid_output_path}")
-    
-    # Perform OCR on the enhanced image
+            # Draw full box in blue (needed for Number_Extract alignment)
+            cv2.rectangle(debug_image, box["top_left"], box["bottom_right"], (255, 0, 0), 2)
+            # Draw text area in green
+            cv2.rectangle(
+                debug_image,
+                (box["top_left"][0], box["text_area_top"]),
+                (box["bottom_right"][0], box["text_area_bottom"]),
+                (0, 255, 0),
+                2
+            )
+            cv2.putText(
+                debug_image,
+                str(box["box_number"]),
+                (box["top_left"][0] + 10, box["top_left"][1] + 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (0, 255, 0),
+                2
+            )
+        cv2.imwrite("grid_with_boxes.png", debug_image)
+        cv2.imwrite("masked_image.png", masked_image)
+
+    # Continue with color detection on masked_image
     try:
-        hsv = cv2.cvtColor(resized_image, cv2.COLOR_BGR2HSV)
-        yellow_lower = np.array([30, 140, 140])
-        yellow_upper = np.array([40, 255, 255])
-        yellow_mask = cv2.inRange(hsv, yellow_lower, yellow_upper)
+        # Convert to HSV for better color handling
+        hsv = cv2.cvtColor(masked_image, cv2.COLOR_BGR2HSV)
         
-        # Enhance yellow color by increasing saturation and brightness
-        yellow_regions = cv2.bitwise_and(hsv, hsv, mask=yellow_mask)
-        h, s, v = cv2.split(yellow_regions)
+        # Extract saturation channel and create mask for highly saturated colors
+        _, saturation, _ = cv2.split(hsv)
+        
+        # Threshold the saturation channel to get saturated colors
+        # Values below 100 are considered unsaturated (greys, blacks, whites)
+        _, color_mask = cv2.threshold(saturation, 100, 255, cv2.THRESH_BINARY)
+        
+        # Apply mask to get only saturated regions
+        saturated_regions = cv2.bitwise_and(hsv, hsv, mask=color_mask)
+        
+        # Enhance saturated colors
+        h, s, v = cv2.split(saturated_regions)
         s = cv2.add(s, 50)  # Increase saturation
         v = cv2.add(v, 50)  # Increase brightness
-        enhanced_yellow = cv2.merge([h, s, v])
+        enhanced_colors = cv2.merge([h, s, v])
         
-        # Convert back to BGR for further processing
-        enhanced_text_image_bgr = cv2.cvtColor(enhanced_yellow, cv2.COLOR_HSV2BGR)
-        enhanced_text_image = cv2.bitwise_and(enhanced_text_image_bgr, enhanced_text_image_bgr, mask=yellow_mask)
+        # Convert back to BGR for OCR
+        enhanced_text_image = cv2.cvtColor(enhanced_colors, cv2.COLOR_HSV2BGR)
         
+        # Apply OCR on the enhanced image
         custom_config = r'--oem 3 --psm 6'
-        ocr_data = pytesseract.image_to_data(enhanced_text_image, config=custom_config, output_type=pytesseract.Output.DICT)
+        ocr_data = pytesseract.image_to_data(enhanced_text_image, config=custom_config, 
+                                           output_type=pytesseract.Output.DICT)
         
-        # Save the processed image if debug is enabled
         if debug:
             processed_image_path = "processed_image.png"
             cv2.imwrite(processed_image_path, enhanced_text_image)
@@ -193,7 +252,12 @@ def process_text_inventory(image_path, row_percentage=33.33, col_percentages=Non
                 top_left = box["top_left"]
                 bottom_right = box["bottom_right"]
                 if top_left[0] <= text_center[0] <= bottom_right[0] and top_left[1] <= text_center[1] <= bottom_right[1]:
-                    box_texts[box["box_number"]].append(text)
+                    # Normalize text before adding to box
+                    normalized_text = normalize_text(text)
+                    if normalized_text:  # Only add if there's text after normalization
+                        box_texts[box["box_number"]].append(normalized_text)
+                        if debug:
+                            print(f"Box {box['box_number']}: Found text '{normalized_text}' (original: '{text}')")
                     break
     
     # Combine all text from each box into a single string
@@ -339,8 +403,8 @@ def process_text_inventory(image_path, row_percentage=33.33, col_percentages=Non
             debug_log.append(f"\nFinal: Box {box_number}: {match['name']} (Score: {match['score']}, Value: {match['value']})")
         
 
-    if debug:# Print summary
-        print(f"\nTotal Boxes: {total_boxes}")
+    if debug:  # Print summary
+        print(f"\nTotal Boxes: {len(boxes)}")  # Changed from total_boxes to len(boxes)
         print(f"Total Extracted Items: {len(final_matches)}")
         print(f"Total Value: {round(sum(item['value'] for item in final_matches.values()), 2)}")
     
