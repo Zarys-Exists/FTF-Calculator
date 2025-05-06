@@ -11,9 +11,14 @@ if root_logger.handlers:
     for handler in root_logger.handlers:
         root_logger.removeHandler(handler)
 
+class TesseractFilter(logging.Filter):
+    def filter(self, record):
+        return 'tesseract' not in record.getMessage().lower()
+    
 # Create and configure a single handler
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%H:%M:%S'))
+handler.addFilter(TesseractFilter())  # Add filter to handler
 
 # Configure root logger
 root_logger.setLevel(logging.DEBUG)
