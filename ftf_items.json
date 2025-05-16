@@ -2,22 +2,22 @@
     "items": [
         {
             "name": "Party Balloons",
-            "value": 16.0,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Pumpkin Slice",
-            "value": 12.0,
+            "value": 15.0,
             "rarity": "legendary"
         },
         {
             "name": "Spooky Brew",
+            "value": 10.5,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Pumpkin Slice",
             "value": 9.5,
             "rarity": "legendary"
         },
         {
             "name": "Lovesick Bow",
-            "value": 8.7,
+            "value": 8.0,
             "rarity": "legendary"
         },
         {
@@ -31,38 +31,33 @@
             "rarity": "legendary"
         },
         {
-            "name": "Pristine Chocolatery",
-            "value": 6.0,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Easter Chick",
-            "value": 6.0,
-            "rarity": "legendary"
-        },
-        {
             "name": "Easter Basket",
-            "value": 5.5,
+            "value": 5.8,
             "rarity": "legendary"
         },
         {
             "name": "Cherry Blossom Tree",
-            "value": 5.5,
+            "value": 5.8,
             "rarity": "legendary"
         },
         {
             "name": "Dark Bone Crusher",
-            "value": 4.0,
+            "value": 3.8,
             "rarity": "legendary"
         },
         {
             "name": "Marine Anchor",
-            "value": 3.5,
+            "value": 3.6,
             "rarity": "legendary"
         },
         {
             "name": "Devilborn",
-            "value": 3.2,
+            "value": 3.5,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Classic",
+            "value": 3.3,
             "rarity": "legendary"
         },
         {
@@ -72,11 +67,6 @@
         },
         {
             "name": "Soulless Theater",
-            "value": 3.0,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Yuletide Gift",
             "value": 3.0,
             "rarity": "legendary"
         },
@@ -96,18 +86,33 @@
             "rarity": "legendary"
         },
         {
-            "name": "Classic",
-            "value": 3.0,
+            "name": "Yuletide Gift",
+            "value": 2.8,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Pristine Chocolatery",
+            "value": 2.8,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Easter Chick",
+            "value": 2.8,
             "rarity": "legendary"
         },
         {
             "name": "Phantom Light",
-            "value": 2.8,
+            "value": 2.7,
             "rarity": "legendary"
         },
         {
             "name": "Lunar Scepter",
-            "value": 2.8,
+            "value": 2.7,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Pegasus Blade",
+            "value": 2.6,
             "rarity": "legendary"
         },
         {
@@ -116,17 +121,22 @@
             "rarity": "legendary"
         },
         {
-            "name": "Pegasus Blade",
-            "value": 2.5,
+            "name": "Pot O' Gold",
+            "value": 2.3,
             "rarity": "legendary"
         },
         {
-            "name": "Autumn Scarecrow",
+            "name": "Blueberry Jam Basket",
             "value": 2.2,
             "rarity": "legendary"
         },
         {
-            "name": "Pot O' Gold",
+            "name": "Bitter Lemonade Basket",
+            "value": 2.2,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Autumn Scarecrow",
             "value": 2.2,
             "rarity": "legendary"
         },
@@ -136,32 +146,7 @@
             "rarity": "legendary"
         },
         {
-            "name": "Blueberry Jam Basket",
-            "value": 1.8,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Bitter Lemonade Basket",
-            "value": 1.8,
-            "rarity": "legendary"
-        },
-        {
             "name": "Grim Galleon",
-            "value": 1.8,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Dark Mansion",
-            "value": 1.8,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Grandfather Clock",
-            "value": 1.8,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Light Bone Crusher",
             "value": 1.7,
             "rarity": "legendary"
         },
@@ -176,13 +161,8 @@
             "rarity": "legendary"
         },
         {
-            "name": "Ragebringer",
-            "value": 1.6,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Jollyday Batter",
-            "value": 1.6,
+            "name": "Light Bone Crusher",
+            "value": 1.5,
             "rarity": "legendary"
         },
         {
@@ -191,37 +171,12 @@
             "rarity": "legendary"
         },
         {
-            "name": "Holiday Hotline",
-            "value": 1.0,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Golden Firework",
-            "value": 1.0,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Aurora Abolisher",
-            "value": 1.0,
-            "rarity": "legendary"
-        },
-        {
             "name": "Santa's Sleigh",
             "value": 1.0,
             "rarity": "legendary"
         },
         {
-            "name": "Toy Box",
-            "value": 1.0,
-            "rarity": "legendary"
-        },
-        {
             "name": "Marching Drums",
-            "value": 1.0,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Santa Boot",
             "value": 1.0,
             "rarity": "legendary"
         },
@@ -246,12 +201,37 @@
             "rarity": "legendary"
         },
         {
-            "name": "Lucky Top Hat",
+            "name": "Mothership",
+            "value": 1.0,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Holiday Hotline",
             "value": 0.95,
             "rarity": "legendary"
         },
         {
-            "name": "Mothership",
+            "name": "Golden Firework",
+            "value": 0.95,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Aurora Abolisher",
+            "value": 0.95,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Toy Box",
+            "value": 0.95,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Santa Boot",
+            "value": 0.95,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Lucky Top Hat",
             "value": 0.95,
             "rarity": "legendary"
         },
@@ -262,7 +242,7 @@
         },
         {
             "name": "Coffin",
-            "value": 0.85,
+            "value": 0.9,
             "rarity": "legendary"
         },
         {
@@ -301,21 +281,6 @@
             "rarity": "legendary"
         },
         {
-            "name": "Mystical Trident",
-            "value": 0.55,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Ancient Trident",
-            "value": 0.55,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Ancestral Trident",
-            "value": 0.55,
-            "rarity": "legendary"
-        },
-        {
             "name": "2019",
             "value": 0.55,
             "rarity": "legendary"
@@ -341,6 +306,21 @@
             "rarity": "legendary"
         },
         {
+            "name": "Mystical Trident",
+            "value": 0.45,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Ancient Trident",
+            "value": 0.45,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Ancestral Trident",
+            "value": 0.45,
+            "rarity": "legendary"
+        },
+        {
             "name": "Santa Chimney",
             "value": 0.45,
             "rarity": "legendary"
@@ -357,6 +337,41 @@
         },
         {
             "name": "Fish Tank",
+            "value": 0.4,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Sweet Train",
+            "value": 0.4,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Festive Train",
+            "value": 0.4,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Winter Train",
+            "value": 0.4,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Ice Sleigh",
+            "value": 0.4,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Stack of Presents",
+            "value": 0.4,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Gingerbread House",
+            "value": 0.4,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Eggnog Machine",
             "value": 0.4,
             "rarity": "legendary"
         },
@@ -386,53 +401,8 @@
             "rarity": "legendary"
         },
         {
-            "name": "Sweet Train",
-            "value": 0.35,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Festive Train",
-            "value": 0.35,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Winter Train",
-            "value": 0.35,
-            "rarity": "legendary"
-        },
-        {
             "name": "Krampus Chimney",
             "value": 0.3,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Ice Sleigh",
-            "value": 0.3,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Stack of Presents",
-            "value": 0.3,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Gingerbread House",
-            "value": 0.3,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Eggnog Machine",
-            "value": 0.3,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Cuddly Bunny",
-            "value": 0.25,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Fudge Bunny",
-            "value": 0.25,
             "rarity": "legendary"
         },
         {
@@ -447,6 +417,26 @@
         },
         {
             "name": "Solar Witch Broom",
+            "value": 0.25,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Owl Tree",
+            "value": 0.25,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Cursed Circus Tent",
+            "value": 0.25,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Haunted Circus Tent",
+            "value": 0.25,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Enchanted Circus Tent",
             "value": 0.25,
             "rarity": "legendary"
         },
@@ -481,11 +471,6 @@
             "rarity": "legendary"
         },
         {
-            "name": "Owl Tree",
-            "value": 0.2,
-            "rarity": "legendary"
-        },
-        {
             "name": "Chromatic Phoenix",
             "value": 0.2,
             "rarity": "legendary"
@@ -501,22 +486,27 @@
             "rarity": "legendary"
         },
         {
-            "name": "Cursed Circus Tent",
-            "value": 0.2,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Haunted Circus Tent",
-            "value": 0.2,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Enchanted Circus Tent",
-            "value": 0.2,
-            "rarity": "legendary"
-        },
-        {
             "name": "Book Of Fortunes",
+            "value": 0.2,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Honey Hive Tree",
+            "value": 0.2,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Watering Can",
+            "value": 0.2,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Cuddly Bunny",
+            "value": 0.15,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Fudge Bunny",
             "value": 0.15,
             "rarity": "legendary"
         },
@@ -592,16 +582,6 @@
         },
         {
             "name": "Irish Harp",
-            "value": 0.1,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Honey Hive Tree",
-            "value": 0.1,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Watering Can",
             "value": 0.1,
             "rarity": "legendary"
         },

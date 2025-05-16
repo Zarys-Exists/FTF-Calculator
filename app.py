@@ -21,7 +21,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)
 handler.addFilter(TesseractFilter())  # Add filter to handler
 
 # Configure root logger
-root_logger.setLevel(logging.DEBUG)
+root_logger.setLevel(logging.INFO)
 root_logger.addHandler(handler)
 
 # Get logger for this module
