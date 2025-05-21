@@ -4,6 +4,7 @@ import tempfile
 import os
 import sys
 from backend.main import merge_and_calculate
+import json  # Import json module for handling JSON data
 
 # Remove all existing handlers
 root_logger = logging.getLogger()
@@ -37,6 +38,11 @@ app = Flask(__name__, static_folder='frontend')
 @app.route('/')
 def serve_frontend():
     return send_from_directory('frontend', 'index.html')
+
+# Serve ftf_items.json for item validation
+@app.route('/ftf_items.json')
+def serve_items():
+    return send_from_directory('.', 'ftf_items.json')
 
 # Serve static files (CSS, JS) from the frontend folder
 @app.route('/<path:path>')
@@ -93,6 +99,8 @@ def process_inventory_route():
     except Exception as e:
         logger.error("Error occurred while processing images:", exc_info=True)
         return jsonify({'error': 'Failed to process images'}), 500
+
+# We don't need the save endpoint anymore as everything will be handled in memory
 
 #TODO Debug configuration
 DEBUG_MODE = False

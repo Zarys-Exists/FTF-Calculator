@@ -50,6 +50,12 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
         fileCountDisplay.style.color = '#00e787';
     }
 
+    // Remove edit button if it exists
+    const editButton = document.querySelector('.edit-button');
+    if (editButton) {
+        editButton.remove();
+    }
+
     // Only hide results and prompt if they are currently shown
     const resultsDiv = document.getElementById('results');
     const promptDiv = document.getElementById('itemListPrompt');
@@ -230,6 +236,17 @@ document.querySelector('.yes-btn').addEventListener('click', () => {
         const table = generateResultsTable();
         secondContainer.appendChild(table);
 
+        // Create edit button but don't show it yet
+        const editButton = document.createElement('button');
+        editButton.className = 'edit-button';
+        editButton.textContent = 'Edit';
+        document.querySelector('.container-wrapper').appendChild(editButton);
+        
+        // Add click handler to edit button
+        editButton.addEventListener('click', function() {
+            toggleEditMode(this);
+        });
+
         // Adjust sizes before animation
         adjustContainerSize(container, () => {
             secondContainer.style.height = `${container.offsetHeight}px`;
@@ -238,6 +255,11 @@ document.querySelector('.yes-btn').addEventListener('click', () => {
             requestAnimationFrame(() => {
                 container.classList.add('slide-left');
                 secondContainer.classList.add('show');
+                
+                // Add delay for edit button appearance
+                setTimeout(() => {
+                    editButton.classList.add('show');
+                }, 300); // Show button after second container animation (300ms)
             });
         });
     }, 300);
@@ -259,6 +281,12 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
     } else {
         fileCountDisplay.textContent = `Selected ${files.length} file(s)`;
         fileCountDisplay.style.color = '#00e787';
+    }
+
+    // Remove edit button if it exists
+    const editButton = document.querySelector('.edit-button');
+    if (editButton) {
+        editButton.remove();
     }
 
     // Only hide results and prompt if they are currently shown
@@ -325,8 +353,9 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
 updateCalculateButtonState();
 
 function generateResultsTable() {
-    // Get the results from the backend response (assume it's stored globally or passed here)
-    const results = window.backendResults || []; // Replace with actual results if needed
+    // Create wrapper div for the content
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = 'table-content-wrapper';
 
     // Create the table element
     const table = document.createElement('table');
@@ -344,18 +373,376 @@ function generateResultsTable() {
     table.appendChild(headerRow);
 
     // Populate the table rows with data
-    results.forEach((item, index) => {
+    const results = window.backendResults || [];    results.forEach((item, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${index + 1}</td> <!-- Serial number -->
-            <td>${item.item_name}</td>
-            <td>${item.quantity}</td>
-            <td>${item.unit_value.toFixed(2)}</td>
+            <td>${index + 1}</td>
+            <td data-original="${item.item_name}">${item.item_name}</td>
+            <td data-original="${item.quantity}">${item.quantity}</td>
+            <td data-original="${item.unit_value.toFixed(2)}">${item.unit_value.toFixed(2)}</td>
             <td>${(item.quantity * item.unit_value).toFixed(2)}</td>
         `;
         table.appendChild(row);
     });
 
-    return table;
+    contentWrapper.appendChild(table);
+
+    return contentWrapper;
+}
+
+// Add these functions at the end of the file
+
+function toggleEditMode(editButton) {
+    const table = document.querySelector('.results-table');
+    const isEditing = table.classList.toggle('edit-mode');
+    const wrapper = document.querySelector('.container-wrapper');
+    
+    if (isEditing) {
+        // Create save button if it doesn't exist
+        if (!document.querySelector('.save-button')) {
+            const saveButton = document.createElement('button');
+            saveButton.className = 'save-button';
+            saveButton.textContent = 'Save';
+            wrapper.appendChild(saveButton);
+            
+            // Add click handler for save button
+            saveButton.addEventListener('click', () => {
+                saveChanges();
+                toggleEditMode(editButton);
+                saveButton.classList.remove('show');
+                setTimeout(() => saveButton.remove(), 300);
+            });
+            
+            // Show the save button with animation
+            setTimeout(() => saveButton.classList.add('show'), 10);
+        }
+        
+        // Make cells editable
+        table.querySelectorAll('tr:not(:first-child)').forEach(row => {
+            const qtyCell = row.cells[2];
+            const nameCell = row.cells[1];
+            const valueCell = row.cells[3];
+            
+            qtyCell.contentEditable = "true";
+            nameCell.contentEditable = "true";
+            
+            // Store original values for both name and value
+            nameCell.dataset.original = nameCell.textContent;
+            valueCell.dataset.original = valueCell.textContent;
+            qtyCell.dataset.original = qtyCell.textContent;
+            
+            // Add input validation and auto-calculation
+            qtyCell.addEventListener('input', function(e) {
+                validateNumberInput(e);
+                recalculateRow(e);
+            });
+            nameCell.addEventListener('input', validateItemName);
+            
+            // Prevent enter key from creating new lines
+            [qtyCell, nameCell].forEach(cell => {
+                cell.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        cell.blur();
+                        return false;
+                    }
+                });
+                
+                // Prevent pasting of content with newlines
+                cell.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    let text = (e.originalEvent || e).clipboardData.getData('text/plain');
+                    text = text.replace(/[\r\n]/g, ''); // Remove newlines
+                    if (cell === nameCell) {
+                        text = text.replace(/\s+/g, ' '); // Convert multiple spaces to single space
+                        text = text.replace(/[^a-zA-Z0-9 ]/g, ''); // Only allow letters, numbers and spaces
+                        if (text.length > 25) text = text.slice(0, 25);
+                    }
+                    document.execCommand('insertText', false, text);
+                });
+            });
+        });
+        
+        editButton.textContent = 'Cancel';
+    } else {
+        // Revert to view mode
+        const saveButton = document.querySelector('.save-button');
+        if (saveButton) {
+            saveButton.classList.remove('show');
+            setTimeout(() => saveButton.remove(), 300);
+        }
+        
+        // If canceling, restore all original values
+        if (editButton.textContent === 'Cancel') {
+            table.querySelectorAll('tr:not(:first-child)').forEach(row => {
+                const nameCell = row.cells[1];
+                const qtyCell = row.cells[2];
+                const valueCell = row.cells[3];
+                const totalCell = row.cells[4];
+                
+                nameCell.textContent = nameCell.dataset.original;
+                qtyCell.textContent = qtyCell.dataset.original;
+                valueCell.textContent = valueCell.dataset.original;
+                totalCell.textContent = (parseFloat(valueCell.dataset.original) * parseInt(qtyCell.dataset.original)).toFixed(2);
+            });
+        }
+        
+        // Remove editability
+        table.querySelectorAll('[contenteditable]').forEach(cell => {
+            cell.contentEditable = "false";
+        });
+        
+        // Recalculate all totals
+        recalculateAllTotals();
+        editButton.textContent = 'Edit';
+    }
+}
+
+function validateNumberInput(event) {
+    const cell = event.target;
+    
+    // Get cursor position before making changes
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    const cursorPosition = range.startOffset;
+    const oldLength = cell.textContent.length;
+    
+    // Only allow digits and strip leading zeros (except single zero)
+    let value = cell.textContent.replace(/[^\d]/g, '');
+    if (value.length > 1 && value[0] === '0') {
+        value = value.slice(1);
+    }
+    
+    // Handle empty case
+    if (!value) {
+        value = '0';
+    }
+    
+    // Limit to range 0-20
+    let numValue = parseInt(value, 10);
+    if (numValue > 20) {
+        value = '20';
+    }
+    
+    // Only update if content changed
+    if (value !== cell.textContent) {
+        // Calculate new cursor position based on what changed
+        let newPosition;
+        if (value.length > oldLength) {
+            // If adding characters, keep cursor after the new character
+            newPosition = cursorPosition + (value.length - oldLength);
+        } else {
+            // If removing characters, keep cursor at the removal point
+            newPosition = cursorPosition - (oldLength - value.length);
+        }
+        // Ensure cursor position is within bounds
+        newPosition = Math.max(0, Math.min(newPosition, value.length));
+        
+        // Update content
+        cell.textContent = value;
+        
+        // Restore cursor position
+        const newRange = document.createRange();
+        newRange.setStart(cell.firstChild || cell, newPosition);
+        newRange.setEnd(cell.firstChild || cell, newPosition);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+    }
+}
+
+function recalculateRow(event) {
+    const row = event.target.closest('tr');
+    const qty = parseFloat(row.cells[2].textContent) || 0;
+    const unitValue = parseFloat(row.cells[3].textContent) || 0;
+    const totalValue = (qty * unitValue).toFixed(2);
+    row.cells[4].textContent = totalValue;
+}
+
+function recalculateAllTotals() {
+    const table = document.querySelector('.results-table');
+    let grandTotal = 0;
+    
+    table.querySelectorAll('tr:not(:first-child)').forEach(row => {
+        const qty = parseFloat(row.cells[2].textContent) || 0;
+        const unitValue = parseFloat(row.cells[3].textContent) || 0;
+        const totalValue = qty * unitValue;
+        row.cells[4].textContent = totalValue.toFixed(2);
+        grandTotal += totalValue;
+    });
+    
+    // Update the grand total in the first container
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = `
+        <h3><p>Grand Total: <strong>${grandTotal.toFixed(2)} hunters</strong></p></h3>
+    `;
+}
+
+function saveChanges() {
+    const table = document.querySelector('.results-table');
+    const changedRows = [];
+    
+    // First pass: identify rows with changes
+    table.querySelectorAll('tr:not(:first-child)').forEach(row => {
+        const nameCell = row.cells[1];
+        const qtyCell = row.cells[2];
+        const valueCell = row.cells[3];
+        const totalCell = row.cells[4];
+        
+        const currentName = nameCell.textContent;
+        const currentQty = parseInt(qtyCell.textContent) || 0;
+        const hasNameChange = currentName !== nameCell.dataset.original;
+        const hasQtyChange = currentQty !== parseInt(qtyCell.dataset.original);
+        
+        if (hasNameChange || hasQtyChange) {
+            changedRows.push({
+                row,
+                cells: { nameCell, qtyCell, valueCell, totalCell },
+                changes: {
+                    hasNameChange,
+                    hasQtyChange,
+                    currentName,
+                    currentQty,
+                    originalName: nameCell.dataset.original,
+                    originalQty: parseInt(qtyCell.dataset.original),
+                    originalValue: parseFloat(valueCell.dataset.original)
+                }
+            });
+        }
+    });
+      if (changedRows.length > 0) {
+        const processChanges = async () => {
+            try {
+                // Only fetch item list if we have name changes
+                const hasNameChanges = changedRows.some(r => r.changes.hasNameChange);
+                let itemList = null;
+                
+                if (hasNameChanges) {
+                    const response = await fetch('/ftf_items.json');
+                    itemList = await response.json();
+                }
+
+                // Process each changed row
+                changedRows.forEach(({ row, cells, changes }) => {
+                    const { nameCell, qtyCell, valueCell, totalCell } = cells;
+                    
+                    // Handle name changes
+                    if (changes.hasNameChange && itemList) {
+                        const matchedItem = itemList.items.find(item => 
+                            item.name.toLowerCase() === changes.currentName.toLowerCase());
+                        
+                        if (matchedItem) {
+                            nameCell.textContent = matchedItem.name;
+                            nameCell.dataset.original = matchedItem.name;
+                            valueCell.textContent = matchedItem.value.toFixed(2);
+                            valueCell.dataset.original = matchedItem.value.toFixed(2);
+                        } else {
+                            nameCell.textContent = changes.originalName;
+                            valueCell.textContent = changes.originalValue.toFixed(2);
+                        }
+                    }
+                              // Always update quantity if it changed
+                    if (changes.hasQtyChange) {
+                        qtyCell.textContent = changes.currentQty.toString();
+                        qtyCell.dataset.original = changes.currentQty.toString();
+                    }
+
+                    // Update total for this row
+                    const currentQty = changes.hasQtyChange ? changes.currentQty : (parseInt(qtyCell.textContent) || 0);
+                    const currentValue = parseFloat(valueCell.textContent) || 0;
+                    totalCell.textContent = (currentQty * currentValue).toFixed(2);
+                });
+
+                // Update backend data and recalculate totals
+                updateBackendResults(table);
+                recalculateAllTotals();
+                
+            } catch (error) {
+                console.error('Error processing changes:', error);                // On error, revert name changes but keep quantity changes
+                changedRows.forEach(({ cells, changes }) => {
+                    if (changes.hasNameChange) {
+                        cells.nameCell.textContent = changes.originalName;
+                        cells.valueCell.textContent = changes.originalValue.toFixed(2);
+                    }
+                    // Preserve quantity changes even on error
+                    if (changes.hasQtyChange) {
+                        cells.qtyCell.textContent = changes.currentQty.toString();
+                        cells.qtyCell.dataset.original = changes.currentQty.toString();
+                        // Update total
+                        const currentValue = parseFloat(cells.valueCell.textContent) || 0;
+                        cells.totalCell.textContent = (changes.currentQty * currentValue).toFixed(2);
+                    }
+                });
+            }
+        };
+
+        processChanges();
+    }
+    // No need for else block as recalculateAllTotals is already called in the success path
+}
+
+function updateBackendResults(table) {
+    window.backendResults = [];
+    table.querySelectorAll('tr:not(:first-child)').forEach(row => {
+        window.backendResults.push({
+            item_name: row.cells[1].textContent,
+            quantity: parseInt(row.cells[2].textContent) || 0,
+            unit_value: parseFloat(row.cells[3].textContent) || 0
+        });
+    });
+}
+
+function validateItemName(event) {
+    const cell = event.target;
+    const prevContent = cell.dataset.prevContent || cell.textContent;
+    
+    // Get cursor position before making changes
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    const cursorPosition = range.startOffset;
+
+    // Only allow letters, numbers and spaces
+    let value = cell.textContent.replace(/[^a-zA-Z0-9 ]/g, '');
+    
+    // If we're already at max length and trying to add more characters, block the addition
+    if (prevContent.length === 25 && value.length > prevContent.length) {
+        // Block any additions when at the limit
+        value = prevContent;
+    }
+    // If we're under the limit but would go over, truncate
+    else if (value.length > 25) {
+        value = value.slice(0, 25);
+    }
+    
+    // Store current content for next comparison
+    cell.dataset.prevContent = value;
+    
+    // Only update if content changed
+    if (value !== cell.textContent) {
+        // Calculate new cursor position based on what changed
+        let newPosition;
+        if (prevContent.length === 25 && value === prevContent) {
+            // If we blocked new characters, keep cursor where it was
+            newPosition = cursorPosition;
+        } else if (value.length > cell.textContent.length) {
+            // If adding characters (within limit), keep cursor after the new character
+            newPosition = cursorPosition + (value.length - cell.textContent.length);
+        } else {
+            // If removing characters, keep cursor at the removal point
+            newPosition = cursorPosition - (cell.textContent.length - value.length);
+        }
+        
+        // Ensure cursor position is within bounds
+        newPosition = Math.max(0, Math.min(newPosition, value.length));
+        
+        // Update content
+        cell.textContent = value;
+        
+        // Restore cursor position
+        const newRange = document.createRange();
+        newRange.setStart(cell.firstChild || cell, newPosition);
+        newRange.setEnd(cell.firstChild || cell, newPosition);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+    }
 }
 
