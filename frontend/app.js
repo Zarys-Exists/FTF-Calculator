@@ -359,9 +359,7 @@ function generateResultsTable() {
 
     // Create the table element
     const table = document.createElement('table');
-    table.className = 'results-table';
-
-    // Create the table header
+    table.className = 'results-table';    // Create the table header
     const headerRow = document.createElement('tr');
     headerRow.innerHTML = `
         <th>No.</th>
@@ -369,10 +367,9 @@ function generateResultsTable() {
         <th>Qty</th>
         <th>Item Value</th>
         <th>Total Value</th>
+        <th class="delete-column">Delete</th>
     `;
-    table.appendChild(headerRow);
-
-    // Populate the table rows with data
+    table.appendChild(headerRow);    // Populate the table rows with data
     const results = window.backendResults || [];    results.forEach((item, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -380,7 +377,9 @@ function generateResultsTable() {
             <td data-original="${item.item_name}">${item.item_name}</td>
             <td data-original="${item.quantity}">${item.quantity}</td>
             <td data-original="${item.unit_value.toFixed(2)}">${item.unit_value.toFixed(2)}</td>
-            <td>${(item.quantity * item.unit_value).toFixed(2)}</td>
+            <td>${(item.quantity * item.unit_value).toFixed(2)}</td>            <td class="delete-column">
+                <button class="delete-btn">✕</button>
+            </td>
         `;
         table.appendChild(row);
     });
@@ -396,6 +395,12 @@ function toggleEditMode(editButton) {
     const table = document.querySelector('.results-table');
     const isEditing = table.classList.toggle('edit-mode');
     const wrapper = document.querySelector('.container-wrapper');
+    
+    // Toggle visibility of delete column
+    const deleteColumns = table.querySelectorAll('.delete-column');
+    deleteColumns.forEach(col => {
+        col.style.display = isEditing ? '' : 'none';
+    });
     
     if (isEditing) {
         // Create save button if it doesn't exist
@@ -417,11 +422,24 @@ function toggleEditMode(editButton) {
             setTimeout(() => saveButton.classList.add('show'), 10);
         }
         
-        // Make cells editable
+    // Add delete button handlers and make cells editable
         table.querySelectorAll('tr:not(:first-child)').forEach(row => {
             const qtyCell = row.cells[2];
             const nameCell = row.cells[1];
             const valueCell = row.cells[3];
+            const deleteBtn = row.querySelector('.delete-btn');
+            
+            // Add delete functionality
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function() {
+                    row.style.opacity = '0';
+                    row.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => {
+                        row.remove();
+                        updateRowNumbers(table);
+                    }, 300);
+                });
+            }
             
             qtyCell.contentEditable = "true";
             nameCell.contentEditable = "true";
@@ -682,13 +700,25 @@ function saveChanges() {
 
 function updateBackendResults(table) {
     window.backendResults = [];
+    let grandTotal = 0;
+    
     table.querySelectorAll('tr:not(:first-child)').forEach(row => {
+        const quantity = parseInt(row.cells[2].textContent) || 0;
+        const unitValue = parseFloat(row.cells[3].textContent) || 0;
+        grandTotal += quantity * unitValue;
+        
         window.backendResults.push({
             item_name: row.cells[1].textContent,
-            quantity: parseInt(row.cells[2].textContent) || 0,
-            unit_value: parseFloat(row.cells[3].textContent) || 0
+            quantity: quantity,
+            unit_value: unitValue
         });
     });
+    
+    // Update the grand total display
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = `
+        <h3><p>Grand Total: <strong>${grandTotal.toFixed(2)} hunters</strong></p></h3>
+    `;
 }
 
 function validateItemName(event) {
@@ -744,5 +774,11 @@ function validateItemName(event) {
         selection.removeAllRanges();
         selection.addRange(newRange);
     }
+}
+
+function updateRowNumbers(table) {
+    table.querySelectorAll('tr:not(:first-child)').forEach((row, index) => {
+        row.cells[0].textContent = index + 1;
+    });
 }
 

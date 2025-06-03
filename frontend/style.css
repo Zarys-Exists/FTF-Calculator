@@ -256,17 +256,17 @@ h1 {
 /* Adjust column widths */
 .results-table th:nth-child(1),
 .results-table td:nth-child(1) {
-    width: 12%; /* No. column */
+    width: 10%; /* No. column */
 }
 
 .results-table th:nth-child(2),
 .results-table td:nth-child(2) {
-    width: 40%; /* Item Name column */
+    width: 35%; /* Item Name column */
 }
 
 .results-table th:nth-child(3),
 .results-table td:nth-child(3) {
-    width: 13%; /* Quantity column */
+    width: 12%; /* Quantity column */
 }
 
 .results-table th:nth-child(4),
@@ -276,8 +276,43 @@ h1 {
 
 .results-table th:nth-child(5),
 .results-table td:nth-child(5) {
-    width: 20%; /* Total Item Value column */
+    width: 18%; /* Total Item Value column */
 }
+
+.delete-column {
+    width: 10%;
+    display: none;
+}
+
+.edit-mode .delete-column {
+    display: table-cell;
+}
+
+.results-table th.delete-column,
+.results-table td.delete-column {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    padding: 0 !important;
+    position: relative;
+}
+
+.results-table .delete-btn {
+    color: red;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 14px;
+    line-height: 14px;
+}
+
 .results-table th {
     background: #2d0054; /* Keep the solid background for the header */
     color: #00ffff; /* Header text color */
