@@ -349,8 +349,7 @@ h1 {
     cursor: pointer;
     font-size: 16px;
     transition: all 0.3s ease;
-    width: auto;
-    min-width: 80px;
+    width: 110px;
     position: absolute;
     bottom: -50px; /* Position below the container */
     right: 3%; /* Align with the second container's right side */
@@ -396,12 +395,10 @@ h1 {
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 16px;
-    width: auto;
-    min-width: 80px;
+    font-size: 16px;    width: 110px;
     position: absolute;
     bottom: -50px;
-    right: 140px; /* Position to the left of edit button */
+    right: 165px; /* Position to the left of edit button */
     z-index: 1000;
     opacity: 0;
     transform: translateY(-20px);
@@ -413,6 +410,31 @@ h1 {
 }
 
 .save-button:hover {
+    background: #6a1ee0;
+}
+
+.add-item-button {
+    background: #5400b5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;    width: 110px;
+    position: absolute;
+    bottom: -50px;
+    right: 290px; /* Position to the left of save button */
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.add-item-button.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.add-item-button:hover {
     background: #6a1ee0;
 }
 

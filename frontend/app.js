@@ -403,23 +403,47 @@ function toggleEditMode(editButton) {
     });
     
     if (isEditing) {
-        // Create save button if it doesn't exist
+        // Create save and add item buttons if they don't exist
         if (!document.querySelector('.save-button')) {
+            const addItemButton = document.createElement('button');
+            addItemButton.className = 'add-item-button';
+            addItemButton.textContent = 'Add Item';
+            wrapper.appendChild(addItemButton);
+
             const saveButton = document.createElement('button');
             saveButton.className = 'save-button';
             saveButton.textContent = 'Save';
             wrapper.appendChild(saveButton);
-            
+
+            // Add click handler for add item button
+            addItemButton.addEventListener('click', () => {
+                addNewRow(table);
+            });
+
             // Add click handler for save button
             saveButton.addEventListener('click', () => {
                 saveChanges();
+                editButton.removeAttribute('data-mode');  // Reset to purple
                 toggleEditMode(editButton);
                 saveButton.classList.remove('show');
-                setTimeout(() => saveButton.remove(), 300);
+                addItemButton.classList.remove('show');
+                setTimeout(() => {
+                    saveButton.remove();
+                    addItemButton.remove();
+                }, 300);
             });
             
-            // Show the save button with animation
-            setTimeout(() => saveButton.classList.add('show'), 10);
+            // Show the buttons with animation
+            setTimeout(() => {
+                addItemButton.classList.add('show');
+                saveButton.classList.add('show');
+            }, 10);
+        }
+
+        // Show the add item button
+        const addItemButton = document.querySelector('.add-item-button');
+        if (addItemButton) {
+            setTimeout(() => addItemButton.classList.add('show'), 10);
         }
         
     // Add delete button handlers and make cells editable
@@ -480,14 +504,20 @@ function toggleEditMode(editButton) {
                 });
             });
         });
-        
-        editButton.textContent = 'Cancel';
-    } else {
-        // Revert to view mode
-        const saveButton = document.querySelector('.save-button');
-        if (saveButton) {
-            saveButton.classList.remove('show');
-            setTimeout(() => saveButton.remove(), 300);
+          editButton.textContent = 'Cancel';
+        editButton.setAttribute('data-mode', 'cancel');  // Add red styling
+    } else {        // Revert to view mode
+        const existingSaveButton = document.querySelector('.save-button');
+        const existingAddButton = document.querySelector('.add-item-button');
+
+        // Hide and remove buttons with animation
+        if (existingSaveButton) {
+            existingSaveButton.classList.remove('show');
+            setTimeout(() => existingSaveButton.remove(), 300);
+        }
+        if (existingAddButton) {
+            existingAddButton.classList.remove('show');
+            setTimeout(() => existingAddButton.remove(), 300);
         }
         
         // If canceling, restore all original values
@@ -509,10 +539,10 @@ function toggleEditMode(editButton) {
         table.querySelectorAll('[contenteditable]').forEach(cell => {
             cell.contentEditable = "false";
         });
-        
-        // Recalculate all totals
+          // Recalculate all totals
         recalculateAllTotals();
         editButton.textContent = 'Edit';
+        editButton.removeAttribute('data-mode');  // Reset to purple
     }
 }
 
@@ -598,20 +628,28 @@ function recalculateAllTotals() {
 function saveChanges() {
     const table = document.querySelector('.results-table');
     const changedRows = [];
+    const rowsToDelete = [];
     
-    // First pass: identify rows with changes
+    // First pass: identify rows with changes and invalid rows
     table.querySelectorAll('tr:not(:first-child)').forEach(row => {
         const nameCell = row.cells[1];
         const qtyCell = row.cells[2];
         const valueCell = row.cells[3];
         const totalCell = row.cells[4];
-        
-        const currentName = nameCell.textContent;
+        const currentName = nameCell.textContent.trim();
         const currentQty = parseInt(qtyCell.textContent) || 0;
+        const isNewRow = nameCell.dataset.original === '';
+        
+        // Always mark rows for deletion if they have no name or no quantity
+        if (currentName === '' || currentQty === 0) {
+            rowsToDelete.push(row);
+            return;
+        }
+
         const hasNameChange = currentName !== nameCell.dataset.original;
         const hasQtyChange = currentQty !== parseInt(qtyCell.dataset.original);
         
-        if (hasNameChange || hasQtyChange) {
+        if (hasNameChange || hasQtyChange || isNewRow) {
             changedRows.push({
                 row,
                 cells: { nameCell, qtyCell, valueCell, totalCell },
@@ -622,29 +660,45 @@ function saveChanges() {
                     currentQty,
                     originalName: nameCell.dataset.original,
                     originalQty: parseInt(qtyCell.dataset.original),
-                    originalValue: parseFloat(valueCell.dataset.original)
+                    originalValue: parseFloat(valueCell.dataset.original),
+                    isNewRow
                 }
             });
         }
-    });
-      if (changedRows.length > 0) {
-        const processChanges = async () => {
-            try {
-                // Only fetch item list if we have name changes
-                const hasNameChanges = changedRows.some(r => r.changes.hasNameChange);
-                let itemList = null;
-                
-                if (hasNameChanges) {
-                    const response = await fetch('/ftf_items.json');
-                    itemList = await response.json();
-                }
+    });      // Always process deletions first
+      if (rowsToDelete.length > 0) {
+          rowsToDelete.forEach(row => {
+              row.style.opacity = '0';
+              row.style.transition = 'opacity 0.3s ease';
+              setTimeout(() => {
+                  row.remove();
+                  updateRowNumbers(table);
+              }, 300);
+          });
+          
+          // Update backend data and recalculate totals after deletions
+          setTimeout(() => {
+              updateBackendResults(table);
+              recalculateAllTotals();
+          }, 350);
+      }
 
-                // Process each changed row
+      if (changedRows.length > 0) {
+          const processChanges = async () => {
+              try {
+                  // Only fetch item list if we have name changes
+                  const hasNameChanges = changedRows.some(r => r.changes.hasNameChange);
+                  let itemList = null;
+                  
+                  if (hasNameChanges) {
+                      const response = await fetch('/ftf_items.json');
+                      itemList = await response.json();
+                  }                  // Process each changed row
                 changedRows.forEach(({ row, cells, changes }) => {
                     const { nameCell, qtyCell, valueCell, totalCell } = cells;
                     
-                    // Handle name changes
-                    if (changes.hasNameChange && itemList) {
+                    // For new rows or name changes, validate against item list
+                    if ((changes.isNewRow || changes.hasNameChange) && itemList) {
                         const matchedItem = itemList.items.find(item => 
                             item.name.toLowerCase() === changes.currentName.toLowerCase());
                         
@@ -653,6 +707,9 @@ function saveChanges() {
                             nameCell.dataset.original = matchedItem.name;
                             valueCell.textContent = matchedItem.value.toFixed(2);
                             valueCell.dataset.original = matchedItem.value.toFixed(2);
+                        } else if (changes.isNewRow) {
+                            rowsToDelete.push(row);
+                            return;
                         } else {
                             nameCell.textContent = changes.originalName;
                             valueCell.textContent = changes.originalValue.toFixed(2);
@@ -667,12 +724,13 @@ function saveChanges() {
                     // Update total for this row
                     const currentQty = changes.hasQtyChange ? changes.currentQty : (parseInt(qtyCell.textContent) || 0);
                     const currentValue = parseFloat(valueCell.textContent) || 0;
-                    totalCell.textContent = (currentQty * currentValue).toFixed(2);
-                });
+                    totalCell.textContent = (currentQty * currentValue).toFixed(2);                });
 
-                // Update backend data and recalculate totals
-                updateBackendResults(table);
-                recalculateAllTotals();
+                // Update backend data and recalculate totals after processing changes
+                setTimeout(() => {
+                    updateBackendResults(table);
+                    recalculateAllTotals();
+                }, 350);
                 
             } catch (error) {
                 console.error('Error processing changes:', error);                // On error, revert name changes but keep quantity changes
@@ -780,5 +838,75 @@ function updateRowNumbers(table) {
     table.querySelectorAll('tr:not(:first-child)').forEach((row, index) => {
         row.cells[0].textContent = index + 1;
     });
+}
+
+function addNewRow(table) {
+    // Get the next row number
+    const nextRowNumber = table.querySelectorAll('tr').length;
+    const row = document.createElement('tr');
+
+    // Create new row with empty item name and quantity defaulted to 1
+    row.innerHTML = `
+        <td>${nextRowNumber}</td>
+        <td data-original="" contenteditable="true"></td>
+        <td data-original="1" contenteditable="true">1</td>
+        <td data-original="0.00">0.00</td>
+        <td>0.00</td>
+        <td class="delete-column">
+            <button class="delete-btn">✕</button>
+        </td>
+    `;
+
+    // Add the row to the table
+    table.appendChild(row);
+
+    // Get cells that need event listeners
+    const nameCell = row.cells[1];
+    const qtyCell = row.cells[2];
+    const deleteBtn = row.querySelector('.delete-btn');
+
+    // Add delete functionality
+    deleteBtn.addEventListener('click', function() {
+        row.style.opacity = '0';
+        row.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+            row.remove();
+            updateRowNumbers(table);
+        }, 300);
+    });
+
+    // Add input validation
+    nameCell.addEventListener('input', validateItemName);
+    qtyCell.addEventListener('input', function(e) {
+        validateNumberInput(e);
+        recalculateRow(e);
+    });
+
+    // Prevent enter key from creating new lines
+    [qtyCell, nameCell].forEach(cell => {
+        cell.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                cell.blur();
+                return false;
+            }
+        });
+        
+        // Prevent pasting of content with newlines
+        cell.addEventListener('paste', function(e) {
+            e.preventDefault();
+            let text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            text = text.replace(/[\r\n]/g, '');
+            if (cell === nameCell) {
+                text = text.replace(/\s+/g, ' ');
+                text = text.replace(/[^a-zA-Z0-9 ]/g, '');
+                if (text.length > 25) text = text.slice(0, 25);
+            }
+            document.execCommand('insertText', false, text);
+        });
+    });
+
+    // Focus on the name cell for immediate editing
+    nameCell.focus();
 }
 
