@@ -2,6 +2,9 @@
 let filesSelected = false;
 let promptAccepted = false;
 
+// Store table state for edit/cancel functionality
+let storedTableState = null;
+
 // Enhanced container size adjustment function
 function adjustContainerSize(container, callback = null) {
     // Store the current height before any changes
@@ -403,6 +406,18 @@ function toggleEditMode(editButton) {
     });
     
     if (isEditing) {
+        // Store the current table state before making any changes
+        storedTableState = {
+            rows: Array.from(table.querySelectorAll('tr:not(:first-child)')).map(row => ({
+                name: row.cells[1].textContent,
+                quantity: row.cells[2].textContent,
+                value: row.cells[3].textContent,
+                total: row.cells[4].textContent,
+                isVisible: row.style.display !== 'none'
+            })),
+            backendResults: [...window.backendResults]
+        };
+        
         // Create save and add item buttons if they don't exist
         if (!document.querySelector('.save-button')) {
             const addItemButton = document.createElement('button');
@@ -413,15 +428,22 @@ function toggleEditMode(editButton) {
             const saveButton = document.createElement('button');
             saveButton.className = 'save-button';
             saveButton.textContent = 'Save';
-            wrapper.appendChild(saveButton);
-
-            // Add click handler for add item button
+            wrapper.appendChild(saveButton);            // Add click handler for add item button
             addItemButton.addEventListener('click', () => {
                 addNewRow(table);
             });
 
             // Add click handler for save button
             saveButton.addEventListener('click', () => {
+                // Clear stored state since we're committing changes
+                storedTableState = null;
+                
+                // Permanently remove hidden rows
+                table.querySelectorAll('tr[style*="display: none"]').forEach(row => {
+                    row.remove();
+                });
+                // Update row numbers after removing rows and before saving changes
+                updateRowNumbers(table);
                 saveChanges();
                 editButton.removeAttribute('data-mode');  // Reset to purple
                 toggleEditMode(editButton);
@@ -446,32 +468,28 @@ function toggleEditMode(editButton) {
             setTimeout(() => addItemButton.classList.add('show'), 10);
         }
         
-    // Add delete button handlers and make cells editable
+        // Add delete button handlers and make cells editable
         table.querySelectorAll('tr:not(:first-child)').forEach(row => {
             const qtyCell = row.cells[2];
             const nameCell = row.cells[1];
             const valueCell = row.cells[3];
             const deleteBtn = row.querySelector('.delete-btn');
             
-            // Add delete functionality
+            // Add delete functionality - just hide the row
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', function() {
                     row.style.opacity = '0';
                     row.style.transition = 'opacity 0.3s ease';
                     setTimeout(() => {
-                        row.remove();
+                        row.style.display = 'none';
                         updateRowNumbers(table);
+                        recalculateAllTotals();
                     }, 300);
                 });
             }
             
             qtyCell.contentEditable = "true";
             nameCell.contentEditable = "true";
-            
-            // Store original values for both name and value
-            nameCell.dataset.original = nameCell.textContent;
-            valueCell.dataset.original = valueCell.textContent;
-            qtyCell.dataset.original = qtyCell.textContent;
             
             // Add input validation and auto-calculation
             qtyCell.addEventListener('input', function(e) {
@@ -494,19 +512,20 @@ function toggleEditMode(editButton) {
                 cell.addEventListener('paste', function(e) {
                     e.preventDefault();
                     let text = (e.originalEvent || e).clipboardData.getData('text/plain');
-                    text = text.replace(/[\r\n]/g, ''); // Remove newlines
+                    text = text.replace(/[\r\n]/g, '');
                     if (cell === nameCell) {
-                        text = text.replace(/\s+/g, ' '); // Convert multiple spaces to single space
-                        text = text.replace(/[^a-zA-Z0-9 ]/g, ''); // Only allow letters, numbers and spaces
+                        text = text.replace(/\s+/g, ' ');
+                        text = text.replace(/[^a-zA-Z0-9 ]/g, '');
                         if (text.length > 25) text = text.slice(0, 25);
                     }
                     document.execCommand('insertText', false, text);
                 });
             });
         });
-          editButton.textContent = 'Cancel';
+        editButton.textContent = 'Cancel';
         editButton.setAttribute('data-mode', 'cancel');  // Add red styling
-    } else {        // Revert to view mode
+    } else {
+        // Revert to view mode
         const existingSaveButton = document.querySelector('.save-button');
         const existingAddButton = document.querySelector('.add-item-button');
 
@@ -520,26 +539,46 @@ function toggleEditMode(editButton) {
             setTimeout(() => existingAddButton.remove(), 300);
         }
         
-        // If canceling, restore all original values
-        if (editButton.textContent === 'Cancel') {
-            table.querySelectorAll('tr:not(:first-child)').forEach(row => {
-                const nameCell = row.cells[1];
-                const qtyCell = row.cells[2];
-                const valueCell = row.cells[3];
-                const totalCell = row.cells[4];
+        // If canceling and we have stored state, restore it
+        if (editButton.textContent === 'Cancel' && storedTableState) {
+            // Remove all existing rows except header
+            const rows = table.querySelectorAll('tr:not(:first-child)');
+            rows.forEach(row => row.remove());
+            
+            // Restore rows from stored state
+            storedTableState.rows.forEach((rowData, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td data-original="${rowData.name}">${rowData.name}</td>
+                    <td data-original="${rowData.quantity}">${rowData.quantity}</td>
+                    <td data-original="${rowData.value}">${rowData.value}</td>
+                    <td>${rowData.total}</td>
+                    <td class="delete-column">
+                        <button class="delete-btn">✕</button>
+                    </td>
+                `;
                 
-                nameCell.textContent = nameCell.dataset.original;
-                qtyCell.textContent = qtyCell.dataset.original;
-                valueCell.textContent = valueCell.dataset.original;
-                totalCell.textContent = (parseFloat(valueCell.dataset.original) * parseInt(qtyCell.dataset.original)).toFixed(2);
+                if (!rowData.isVisible) {
+                    row.style.display = 'none';
+                }
+                
+                table.appendChild(row);
             });
+            
+            // Restore backend results
+            window.backendResults = [...storedTableState.backendResults];
+            
+            // Clear stored state
+            storedTableState = null;
         }
         
         // Remove editability
         table.querySelectorAll('[contenteditable]').forEach(cell => {
             cell.contentEditable = "false";
         });
-          // Recalculate all totals
+        
+        // Recalculate all totals
         recalculateAllTotals();
         editButton.textContent = 'Edit';
         editButton.removeAttribute('data-mode');  // Reset to purple
@@ -665,35 +704,45 @@ function saveChanges() {
                 }
             });
         }
-    });      // Always process deletions first
-      if (rowsToDelete.length > 0) {
-          rowsToDelete.forEach(row => {
-              row.style.opacity = '0';
-              row.style.transition = 'opacity 0.3s ease';
-              setTimeout(() => {
-                  row.remove();
-                  updateRowNumbers(table);
-              }, 300);
-          });
-          
-          // Update backend data and recalculate totals after deletions
-          setTimeout(() => {
-              updateBackendResults(table);
-              recalculateAllTotals();
-          }, 350);
-      }
+    });      
+    
+    // Process deletions with animation
+    const processDeletes = () => {
+        if (rowsToDelete.length > 0) {
+            rowsToDelete.forEach(row => {
+                row.style.opacity = '0';
+                row.style.transition = 'opacity 0.3s ease';
+            });
+            
+            setTimeout(() => {
+                rowsToDelete.forEach(row => {
+                    row.remove();
+                });
+                updateRowNumbers(table);
+                recalculateAllTotals();
+            }, 300);
+        }
+    };
 
-      if (changedRows.length > 0) {
-          const processChanges = async () => {
-              try {
-                  // Only fetch item list if we have name changes
-                  const hasNameChanges = changedRows.some(r => r.changes.hasNameChange);
-                  let itemList = null;
-                  
-                  if (hasNameChanges) {
-                      const response = await fetch('/ftf_items.json');
-                      itemList = await response.json();
-                  }                  // Process each changed row
+    // Always process deletions first
+    processDeletes();
+
+    if (changedRows.length > 0) {
+        const processChanges = async () => {
+            try {
+                // Only fetch item list if we have name changes
+                const hasNameChanges = changedRows.some(r => r.changes.hasNameChange);
+                let itemList = null;
+                
+                if (hasNameChanges) {
+                    const response = await fetch('/ftf_items.json');
+                    itemList = await response.json();
+                }                  
+                
+                // Keep track of additional rows to delete
+                const additionalRowsToDelete = [];
+
+                // Process each changed row
                 changedRows.forEach(({ row, cells, changes }) => {
                     const { nameCell, qtyCell, valueCell, totalCell } = cells;
                     
@@ -708,14 +757,16 @@ function saveChanges() {
                             valueCell.textContent = matchedItem.value.toFixed(2);
                             valueCell.dataset.original = matchedItem.value.toFixed(2);
                         } else if (changes.isNewRow) {
-                            rowsToDelete.push(row);
+                            // Mark the entire row for deletion
+                            additionalRowsToDelete.push(row);
                             return;
                         } else {
                             nameCell.textContent = changes.originalName;
                             valueCell.textContent = changes.originalValue.toFixed(2);
                         }
                     }
-                              // Always update quantity if it changed
+
+                    // Always update quantity if it changed
                     if (changes.hasQtyChange) {
                         qtyCell.textContent = changes.currentQty.toString();
                         qtyCell.dataset.original = changes.currentQty.toString();
@@ -724,16 +775,35 @@ function saveChanges() {
                     // Update total for this row
                     const currentQty = changes.hasQtyChange ? changes.currentQty : (parseInt(qtyCell.textContent) || 0);
                     const currentValue = parseFloat(valueCell.textContent) || 0;
-                    totalCell.textContent = (currentQty * currentValue).toFixed(2);                });
+                    totalCell.textContent = (currentQty * currentValue).toFixed(2);
+                });
 
-                // Update backend data and recalculate totals after processing changes
-                setTimeout(() => {
-                    updateBackendResults(table);
-                    recalculateAllTotals();
-                }, 350);
+                // Process any additional rows that need to be deleted
+                if (additionalRowsToDelete.length > 0) {
+                    additionalRowsToDelete.forEach(row => {
+                        row.style.opacity = '0';
+                        row.style.transition = 'opacity 0.3s ease';
+                    });
+                    
+                    setTimeout(() => {
+                        additionalRowsToDelete.forEach(row => {
+                            row.remove();
+                        });
+                        updateRowNumbers(table);
+                        updateBackendResults(table);
+                        recalculateAllTotals();
+                    }, 300);
+                } else {
+                    // If no additional deletions, still update backend and totals
+                    setTimeout(() => {                        updateBackendResults(table);
+                        updateRowNumbers(table);
+                        recalculateAllTotals();
+                    }, 350);
+                }
                 
             } catch (error) {
-                console.error('Error processing changes:', error);                // On error, revert name changes but keep quantity changes
+                console.error('Error processing changes:', error);
+                // On error, revert name changes but keep quantity changes
                 changedRows.forEach(({ cells, changes }) => {
                     if (changes.hasNameChange) {
                         cells.nameCell.textContent = changes.originalName;
@@ -753,7 +823,6 @@ function saveChanges() {
 
         processChanges();
     }
-    // No need for else block as recalculateAllTotals is already called in the success path
 }
 
 function updateBackendResults(table) {
@@ -835,8 +904,11 @@ function validateItemName(event) {
 }
 
 function updateRowNumbers(table) {
-    table.querySelectorAll('tr:not(:first-child)').forEach((row, index) => {
-        row.cells[0].textContent = index + 1;
+    let visibleIndex = 1;
+    table.querySelectorAll('tr:not(:first-child)').forEach(row => {
+        if (row.style.display !== 'none') {
+            row.cells[0].textContent = visibleIndex++;
+        }
     });
 }
 
