@@ -2,7 +2,7 @@
     "items": [
         {
             "name": "Party Balloons",
-            "value": 16.0,
+            "value": 16.5,
             "rarity": "legendary"
         },
         {
@@ -17,7 +17,7 @@
         },
         {
             "name": "Lovesick Bow",
-            "value": 8.2,
+            "value": 8.5,
             "rarity": "legendary"
         },
         {
@@ -32,12 +32,22 @@
         },
         {
             "name": "Easter Basket",
-            "value": 5.6,
+            "value": 5.3,
             "rarity": "legendary"
         },
         {
             "name": "Cherry Blossom Tree",
             "value": 6.2,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Spring World",
+            "value": 4.0,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Bleeding Heart",
+            "value": 4.0,
             "rarity": "legendary"
         },
         {
@@ -47,12 +57,12 @@
         },
         {
             "name": "Marine Anchor",
-            "value": 3.9,
+            "value": 4.0,
             "rarity": "legendary"
         },
         {
             "name": "Devilborn",
-            "value": 4.2,
+            "value": 4.5,
             "rarity": "legendary"
         },
         {
@@ -87,22 +97,22 @@
         },
         {
             "name": "Yuletide Gift",
-            "value": 2.5,
+            "value": 2.4,
             "rarity": "legendary"
         },
         {
             "name": "Pristine Chocolatery",
-            "value": 2.5,
+            "value": 2.4,
             "rarity": "legendary"
         },
         {
             "name": "Easter Chick",
-            "value": 2.2,
+            "value": 2.0,
             "rarity": "legendary"
         },
         {
             "name": "Phantom Light",
-            "value": 2.6,
+            "value": 2.5,
             "rarity": "legendary"
         },
         {
@@ -137,7 +147,7 @@
         },
         {
             "name": "Autumn Scarecrow",
-            "value": 2.0,
+            "value": 1.9,
             "rarity": "legendary"
         },
         {
@@ -167,12 +177,12 @@
         },
         {
             "name": "Grim Galleon",
-            "value": 1.9,
+            "value": 2.9,
             "rarity": "legendary"
         },
         {
             "name": "Mythical Fortune",
-            "value": 1.6,
+            "value": 1.5,
             "rarity": "legendary"
         },
         {
@@ -182,7 +192,7 @@
         },
         {
             "name": "Light Bone Crusher",
-            "value": 1.4,
+            "value": 1.3,
             "rarity": "legendary"
         },
         {
@@ -272,12 +282,12 @@
         },
         {
             "name": "Unleashed Beast",
-            "value": 0.5,
+            "value": 0.3,
             "rarity": "legendary"
         },
         {
             "name": "Magical Portal",
-            "value": 0.7,
+            "value": 0.75,
             "rarity": "legendary"
         },
         {
@@ -328,6 +338,19 @@
         {
             "name": "Lil' Tree",
             "value": 0.55,
+            "rarity": "legendary"
+        },
+        {
+            "name": "Nightbloom",
+            "value": 0.4,
+            "rarity": "legendary"
+        },{
+            "name": "Lilium Bush",
+            "value": 0.8,
+            "rarity": "legendary"
+        },{
+            "name": "Dayflower",
+            "value": 0.4,
             "rarity": "legendary"
         },
         {

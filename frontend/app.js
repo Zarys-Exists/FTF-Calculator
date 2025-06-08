@@ -1,41 +1,49 @@
-// Track if files are selected
+// Track if files are selected and if processing is ongoing
 let filesSelected = false;
 let promptAccepted = false;
+let isProcessing = false;
 
 // Store table state for edit/cancel functionality
 let storedTableState = null;
+let hasUnsavedChanges = false;
 
-// Enhanced container size adjustment function
+// Enhanced container size adjustment function with improved transition timing
 function adjustContainerSize(container, callback = null) {
     // Store the current height before any changes
     const startHeight = container.offsetHeight;
     
-    // Set transition for smooth height change
-    container.style.transition = 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    // Temporarily disable transitions
+    container.style.transition = 'none';
     
-    // Temporarily remove transition to measure new height
-    requestAnimationFrame(() => {
-        container.style.height = 'auto';
-        const targetHeight = container.scrollHeight;
-        
-        // Reset to start height
-        container.style.height = `${startHeight}px`;
-        
-        // Force browser reflow
-        container.offsetHeight;
-        
-        // Animate to new height
-        requestAnimationFrame(() => {
-            container.style.height = `${targetHeight}px`;
-            
-            // Execute callback after transition if provided
-            if (callback) {
-                container.addEventListener('transitionend', () => {
-                    callback();
-                }, { once: true });
-            }
-        });
-    });
+    // Force reflow to ensure transition is disabled
+    container.offsetHeight;
+    
+    // Set container to auto height to measure final size
+    container.style.height = 'auto';
+    const targetHeight = container.scrollHeight;
+    
+    // Reset to start height
+    container.style.height = `${startHeight}px`;
+    
+    // Force another reflow
+    container.offsetHeight;
+    
+    // Re-enable transition and animate to new height
+    container.style.transition = 'height 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+    container.style.height = `${targetHeight}px`;
+    
+    // Execute callback after transition if provided
+    if (callback) {
+        container.addEventListener('transitionend', () => {
+            callback();
+        }, { once: true });
+    }
+    
+    // Clear transition after animation completes
+    container.addEventListener('transitionend', () => {
+        container.style.transition = 'none';
+        container.style.height = 'auto'; // Allow container to naturally resize with content
+    }, { once: true });
 }
 
 // Update file selection status when files are chosen
@@ -71,13 +79,23 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
         promptDiv.style.transition = 'opacity 0.3s ease';
         promptDiv.style.opacity = '0';
         
+        // Wait for fade out before clearing content
         setTimeout(() => {
+            // Important: Reset opacity and remove show class BEFORE clearing content
+            resultsDiv.style.transition = 'none';  // Disable transition temporarily
             resultsDiv.classList.remove('show');
+            resultsDiv.style.opacity = '1';  // Reset opacity for next show
+            // Clear content after resetting display properties
             resultsDiv.innerHTML = '';
             promptDiv.style.display = 'none';
             
             // Adjust container size after content is hidden
             adjustContainerSize(container);
+            
+            // Re-enable transitions
+            setTimeout(() => {
+                resultsDiv.style.transition = 'opacity 0.3s ease';
+            }, 0);
         }, 300);
     }
 
@@ -119,25 +137,82 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
 
 // Process button click handler
 document.getElementById('processButton').addEventListener('click', async () => {
-    if (!filesSelected) {
-        alert("Please upload at least one inventory screenshot.");
+    if (!filesSelected || isProcessing) {        if (!filesSelected) {
+            alert("Please upload at least one inventory screenshot.");
+        }
         return;
     }
+    
+    // Reset edited state and set processing state
+    hasUnsavedChanges = false;
+    isProcessing = true;
+    const processButton = document.getElementById('processButton');
+    processButton.disabled = true;
+    processButton.style.opacity = '0.5';
+    processButton.style.cursor = 'not-allowed';
 
     const container = document.querySelector('.container');
     const resultsDiv = document.getElementById('results');
     const errorMessage = document.getElementById('errorMessage');
-    const promptDiv = document.getElementById('itemListPrompt'); // Reference to the prompt
+    const promptDiv = document.getElementById('itemListPrompt'); // Reference to the prompt    // Clear previous results and error messages
+    resultsDiv.innerHTML = '';
+    resultsDiv.classList.remove('show');
+    errorMessage.style.opacity = '0';
+    promptDiv.style.display = 'none';    // Create and show progress bar
+    const progressContainer = document.createElement('div');
+    progressContainer.className = 'progress-container';
+    progressContainer.innerHTML = `
+        <div class="loading-message">Processing your inventory screenshots...</div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        <div class="progress-text">0%</div>
+    `;    resultsDiv.appendChild(progressContainer);
+    resultsDiv.classList.add('show');
+    
+    // Force a reflow to ensure transitions work
+    progressContainer.offsetHeight;
+    progressContainer.classList.add('show');
+    
+    // Adjust container size to fit progress bar
+    adjustContainerSize(container);    // Loading messages based on percentage
+    const loadingMessages = [
+        { message: "Analyzing images...", threshold: 0 },
+        { message: "Extracting item data...", threshold: 30 },
+        { message: "Calculating values...", threshold: 60 },
+        { message: "Almost done...", threshold: 95 }
+    ];
 
-    // Clear previous results and error messages
-    resultsDiv.innerHTML = ''; // Clear previous results
-    resultsDiv.classList.remove('show'); // Hide results container
-    errorMessage.style.opacity = '0'; // Hide error message
-    promptDiv.style.display = 'none'; // Hide the prompt initially
+    // Show progress animation
+    const files = document.getElementById('imageUpload').files;
+    const totalTime = files.length * 1200; // 1200 milliseconds per image
+    
+    // Animate progress bar
+    const progressFill = progressContainer.querySelector('.progress-fill');
+    const progressText = progressContainer.querySelector('.progress-text');
+    const loadingMessageElement = progressContainer.querySelector('.loading-message');
+    const startTime = Date.now();    const updateProgress = () => {
+        const elapsedTime = Date.now() - startTime;
+        const progress = Math.min((elapsedTime / totalTime) * 100, 95);
+        progressFill.style.width = `${progress}%`;
+        progressText.textContent = `${Math.round(progress)}%`;
+
+        // Update loading message based on progress
+        for (let i = loadingMessages.length - 1; i >= 0; i--) {
+            if (progress >= loadingMessages[i].threshold) {
+                loadingMessageElement.textContent = loadingMessages[i].message;
+                break;
+            }
+        }
+
+        if (progress < 95) {
+            requestAnimationFrame(updateProgress);
+        }
+    };
+    requestAnimationFrame(updateProgress);
 
     const formData = new FormData();
-    const files = document.getElementById('imageUpload').files;
-    Array.from(files).forEach(file => formData.append('image', file)); // Add new files to FormData
+    Array.from(files).forEach(file => formData.append('image', file));
 
     try {
         // Send images to the backend
@@ -148,22 +223,40 @@ document.getElementById('processButton').addEventListener('click', async () => {
 
         if (!response.ok) {
             throw new Error('Failed to process the images.');
-        }
-
-        const data = await response.json();
+        }        const data = await response.json();
         console.log("Backend response:", data); // Debugging
+          // Check if total exists and is valid
+        const total = data.total || 0;
+        
+        // Check thresholds
+        const poorThreshold = files.length * 100;
+        const duperThreshold = files.length * 400;
+        const isPoor = total > poorThreshold;
+        const isDuper = total > duperThreshold;
+        
+        // Jump to 100% after receiving results
+        progressFill.style.transition = 'width 0.3s ease';
+        progressFill.style.width = '100%';
+        progressText.textContent = '100%';
+        
+        // Set appropriate message based on thresholds and total
+        if (total === 0) {
+            loadingMessageElement.textContent = "Done! (Empty inventory?)";
+        } else if (isDuper) {
+            loadingMessageElement.textContent = "Done!... Duper detected";
+        } else if (isPoor) {
+            loadingMessageElement.textContent = "Done! (you're poor)";
+        } else {
+            loadingMessageElement.textContent = "Done!";
+        }
+        
+        // Wait for the progress animation to complete
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         // Store results globally for use in the second container
-        window.backendResults = data.results || [];
-
-        // Ensure the total value exists in the response
-        if (!data.total) {
-            throw new Error('No total value returned from the backend.');
-        }
-
-        // Display the grand total in the results container
+        window.backendResults = data.results || [];        // Display the grand total in the results container using the safe total value
         resultsDiv.innerHTML = `
-            <h3><p>Grand Total: <strong>${data.total.toFixed(2)} hunters</strong></p></h3>
+            <h3><p>Grand Total: <strong>${total.toFixed(2)} hunters</strong></p></h3>
         `;
         console.log("Updated resultsDiv content:", resultsDiv.innerHTML); // Debugging
 
@@ -181,6 +274,15 @@ document.getElementById('processButton').addEventListener('click', async () => {
         console.error('Error:', error);
         errorMessage.textContent = 'An error occurred while processing the images. Please try again.';
         errorMessage.style.opacity = '1'; // Show error message
+    } finally {
+        // Reset processing state
+        isProcessing = false;
+        // Only re-enable the button if files are still selected and prompt not accepted
+        if (filesSelected && !promptAccepted) {
+            processButton.disabled = false;
+            processButton.style.opacity = '1';
+            processButton.style.cursor = 'pointer';
+        }
     }
 });
 
@@ -217,55 +319,61 @@ document.querySelector('.yes-btn').addEventListener('click', () => {
     const prompt = document.getElementById('itemListPrompt');
     const container = document.querySelector('.container');
 
+    // Fade out prompt
     prompt.style.opacity = '0';
+    prompt.style.transition = 'opacity 0.3s ease';
 
-    setTimeout(() => {
+    // Create and set up containers
+    if (!document.querySelector('.container-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'container-wrapper';
+        container.parentNode.insertBefore(wrapper, container);
+        wrapper.appendChild(container);
+    }
+
+    const secondContainer = document.createElement('div');
+    secondContainer.className = 'second-container';
+    document.querySelector('.container-wrapper').appendChild(secondContainer);
+
+    // Generate and append the table to the second container
+    const table = generateResultsTable();
+    secondContainer.appendChild(table);
+
+    // Create edit button
+    const editButton = document.createElement('button');
+    editButton.className = 'edit-button';
+    editButton.textContent = 'Edit';
+    document.querySelector('.container-wrapper').appendChild(editButton);
+    
+    // Add click handler to edit button
+    editButton.addEventListener('click', function() {
+        toggleEditMode(this);
+    });
+
+    // Force reflow to ensure transitions work
+    secondContainer.offsetHeight;    // Start animations immediately
+    requestAnimationFrame(() => {
+        // Hide prompt and adjust sizes
         prompt.style.display = 'none';
         prompt.style.opacity = '1';
-
-        // Create containers and adjust sizes first
-        if (!document.querySelector('.container-wrapper')) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'container-wrapper';
-            container.parentNode.insertBefore(wrapper, container);
-            wrapper.appendChild(container);
-        }
-
-        const secondContainer = document.createElement('div');
-        secondContainer.className = 'second-container';
-        document.querySelector('.container-wrapper').appendChild(secondContainer);
-
-        // Generate and append the table to the second container
-        const table = generateResultsTable();
-        secondContainer.appendChild(table);
-
-        // Create edit button but don't show it yet
-        const editButton = document.createElement('button');
-        editButton.className = 'edit-button';
-        editButton.textContent = 'Edit';
-        document.querySelector('.container-wrapper').appendChild(editButton);
         
-        // Add click handler to edit button
-        editButton.addEventListener('click', function() {
-            toggleEditMode(this);
-        });
-
-        // Adjust sizes before animation
-        adjustContainerSize(container, () => {
-            secondContainer.style.height = `${container.offsetHeight}px`;
-
-            // Trigger animations after next frame
-            requestAnimationFrame(() => {
-                container.classList.add('slide-left');
-                secondContainer.classList.add('show');
-                
-                // Add delay for edit button appearance
-                setTimeout(() => {
-                    editButton.classList.add('show');
-                }, 300); // Show button after second container animation (300ms)
-            });
-        });
-    }, 300);
+        // Enable transitions on containers
+        container.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        secondContainer.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        // Match heights before animation
+        const containerHeight = container.offsetHeight;
+        secondContainer.style.height = `${containerHeight}px`;
+        
+        // Trigger animations
+        container.classList.add('slide-left');
+        secondContainer.classList.add('show');
+        
+        // Show edit button after container animation
+        setTimeout(() => {
+            editButton.classList.add('show');
+        }, 300);
+    });
 
     promptAccepted = true;
     updateCalculateButtonState();
@@ -277,6 +385,9 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
     const files = Array.from(this.files);
     
     filesSelected = files.length > 0;
+    
+    // Reset edited state when new files are selected
+    hasUnsavedChanges = false;
     
     if (!filesSelected) {
         fileCountDisplay.textContent = 'No files chosen';
@@ -304,13 +415,23 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
         promptDiv.style.transition = 'opacity 0.3s ease';
         promptDiv.style.opacity = '0';
         
+        // Wait for fade out before clearing content
         setTimeout(() => {
+            // Important: Reset opacity and remove show class BEFORE clearing content
+            resultsDiv.style.transition = 'none';  // Disable transition temporarily
             resultsDiv.classList.remove('show');
+            resultsDiv.style.opacity = '1';  // Reset opacity for next show
+            // Clear content after resetting display properties
             resultsDiv.innerHTML = '';
             promptDiv.style.display = 'none';
             
             // Adjust container size after content is hidden
             adjustContainerSize(container);
+            
+            // Re-enable transitions
+            setTimeout(() => {
+                resultsDiv.style.transition = 'opacity 0.3s ease';
+            }, 0);
         }, 300);
     }
 
@@ -431,12 +552,12 @@ function toggleEditMode(editButton) {
             wrapper.appendChild(saveButton);            // Add click handler for add item button
             addItemButton.addEventListener('click', () => {
                 addNewRow(table);
-            });
-
-            // Add click handler for save button
+            });            // Add click handler for save button
             saveButton.addEventListener('click', () => {
                 // Clear stored state since we're committing changes
                 storedTableState = null;
+                // Set flag to indicate changes were saved
+                hasUnsavedChanges = true;
                 
                 // Permanently remove hidden rows
                 table.querySelectorAll('tr[style*="display: none"]').forEach(row => {
@@ -537,9 +658,7 @@ function toggleEditMode(editButton) {
         if (existingAddButton) {
             existingAddButton.classList.remove('show');
             setTimeout(() => existingAddButton.remove(), 300);
-        }
-        
-        // If canceling and we have stored state, restore it
+        }        // If canceling and we have stored state, restore it
         if (editButton.textContent === 'Cancel' && storedTableState) {
             // Remove all existing rows except header
             const rows = table.querySelectorAll('tr:not(:first-child)');
@@ -660,7 +779,7 @@ function recalculateAllTotals() {
     // Update the grand total in the first container
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = `
-        <h3><p>Grand Total: <strong>${grandTotal.toFixed(2)} hunters</strong></p></h3>
+        <h3><p>Grand Total: <strong>${grandTotal.toFixed(2)} hunters</strong>${hasUnsavedChanges ? ' <span style="color: #808080; font-size: 0.7em;">(Edited)</span>' : ''}</p></h3>
     `;
 }
 
@@ -839,12 +958,10 @@ function updateBackendResults(table) {
             quantity: quantity,
             unit_value: unitValue
         });
-    });
-    
-    // Update the grand total display
+    });    // Update the grand total display
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = `
-        <h3><p>Grand Total: <strong>${grandTotal.toFixed(2)} hunters</strong></p></h3>
+        <h3><p>Grand Total: <strong>${grandTotal.toFixed(2)} hunters</strong>${hasUnsavedChanges ? ' <span style="color: #808080; font-size: 0.7em;">(Edited)</span>' : ''}</p></h3>
     `;
 }
 

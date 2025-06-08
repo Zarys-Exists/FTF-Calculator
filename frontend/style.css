@@ -133,14 +133,12 @@ h1 {
     background: #5400b5 !important;
     opacity: 0.5;
 }
-  
-  /* Results section */
-  #results {
+    /* Results section */
+  #results:not(.progress-container) {
     margin-top: 40px;
     padding: 25px;
     background: none;
-    border: solid #6400c1;
-    border-width: 2px;
+    border: 2px solid #6400c1; /* Add border */
     border-radius: 15px;
     min-height: 80px;
     font-size: 16px;
@@ -436,6 +434,64 @@ h1 {
 
 .add-item-button:hover {
     background: #6a1ee0;
+}
+
+.progress-container {
+    width: 100%;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.progress-container.show {
+    opacity: 1;
+}
+
+.progress-bar {    width: 100%;
+    height: 12px;
+    background: rgba(128, 0, 128, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    margin: 15px 0;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+
+}
+
+.progress-fill {    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #6000aaf4, #8200fc);
+    border-radius: 4px;
+    transition: width 0.2s ease;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 30px 0;
+    }
+}
+
+.progress-text {
+    text-align: center;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+.loading-message {
+    text-align: center;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 15px;
+    font-style: italic;
 }
 
 @media screen and (max-width: 768px) {
