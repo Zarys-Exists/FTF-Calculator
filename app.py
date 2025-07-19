@@ -32,7 +32,8 @@ logger = logging.getLogger(__name__)
 werkzeug_logger = logging.getLogger('werkzeug')
 werkzeug_logger.disabled = True
 
-app = Flask(__name__, static_folder='frontend')
+# Update app configuration
+app = Flask(__name__, static_folder='frontend', static_url_path='')
 
 # Serve the frontend (index.html) page
 @app.route('/')
@@ -42,7 +43,7 @@ def serve_frontend():
 # Serve ftf_items.json for item validation
 @app.route('/ftf_items.json')
 def serve_items():
-    return send_from_directory('.', 'ftf_items.json')
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), 'ftf_items.json')
 
 # Serve static files (CSS, JS) from the frontend folder
 @app.route('/<path:path>')
