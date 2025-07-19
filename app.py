@@ -111,7 +111,10 @@ if __name__ == '__main__':
     cli = sys.modules['flask.cli']
     cli.show_server_banner = lambda *x: None
     
-    logger.info("Starting Flask server at http://127.0.0.1:5000")
-    app.run(debug=DEBUG_MODE)
+    # Get port from environment variable or default to 5000
+    port = int(os.environ.get('PORT', 5000))
+    
+    logger.info(f"Starting Flask server on port {port}")
+    app.run(host='0.0.0.0', port=port, debug=DEBUG_MODE)
 
 

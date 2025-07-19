@@ -185,7 +185,7 @@ document.getElementById('processButton').addEventListener('click', async () => {
 
     // Show progress animation
     const files = document.getElementById('imageUpload').files;
-    const totalTime = files.length * 1200; // 1200 milliseconds per image
+    const totalTime = files.length * 1000; // 1200 milliseconds per image
     
     // Animate progress bar
     const progressFill = progressContainer.querySelector('.progress-fill');
@@ -256,7 +256,7 @@ document.getElementById('processButton').addEventListener('click', async () => {
         // Store results globally for use in the second container
         window.backendResults = data.results || [];        // Display the grand total in the results container using the safe total value
         resultsDiv.innerHTML = `
-            <h3><p>Grand Total: <strong>${total.toFixed(2)} hunters</strong></p></h3>
+            <h3><p>Grand Total: ${total} fv [${(total/40).toFixed(3)} hv]</p></h3>
         `;
         console.log("Updated resultsDiv content:", resultsDiv.innerHTML); // Debugging
 
@@ -500,8 +500,8 @@ function generateResultsTable() {
             <td>${index + 1}</td>
             <td data-original="${item.item_name}">${item.item_name}</td>
             <td data-original="${item.quantity}">${item.quantity}</td>
-            <td data-original="${item.unit_value.toFixed(2)}">${item.unit_value.toFixed(2)}</td>
-            <td>${(item.quantity * item.unit_value).toFixed(2)}</td>            <td class="delete-column">
+            <td data-original="${item.unit_value}">${item.unit_value}</td>
+            <td>${(item.quantity * item.unit_value)}</td>            <td class="delete-column">
                 <button class="delete-btn">✕</button>
             </td>
         `;
@@ -760,7 +760,7 @@ function recalculateRow(event) {
     const row = event.target.closest('tr');
     const qty = parseFloat(row.cells[2].textContent) || 0;
     const unitValue = parseFloat(row.cells[3].textContent) || 0;
-    const totalValue = (qty * unitValue).toFixed(2);
+    const totalValue = (qty * unitValue);
     row.cells[4].textContent = totalValue;
 }
 
@@ -772,14 +772,14 @@ function recalculateAllTotals() {
         const qty = parseFloat(row.cells[2].textContent) || 0;
         const unitValue = parseFloat(row.cells[3].textContent) || 0;
         const totalValue = qty * unitValue;
-        row.cells[4].textContent = totalValue.toFixed(2);
+        row.cells[4].textContent = totalValue;
         grandTotal += totalValue;
     });
     
     // Update the grand total in the first container
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = `
-        <h3><p>Grand Total: <strong>${grandTotal.toFixed(2)} hunters</strong>${hasUnsavedChanges ? ' <span style="color: #808080; font-size: 0.7em;">(Edited)</span>' : ''}</p></h3>
+        <h3><p>Grand Total: ${grandTotal} fv [${grandTotal.toFixed(3)/40} hv] ${hasUnsavedChanges ? ' <span style="color: #808080; font-size: 0.7em;">(Edited)</span>' : ''}</p></h3>
     `;
 }
 
@@ -873,15 +873,15 @@ function saveChanges() {
                         if (matchedItem) {
                             nameCell.textContent = matchedItem.name;
                             nameCell.dataset.original = matchedItem.name;
-                            valueCell.textContent = matchedItem.value.toFixed(2);
-                            valueCell.dataset.original = matchedItem.value.toFixed(2);
+                            valueCell.textContent = matchedItem.value;
+                            valueCell.dataset.original = matchedItem.value;
                         } else if (changes.isNewRow) {
                             // Mark the entire row for deletion
                             additionalRowsToDelete.push(row);
                             return;
                         } else {
                             nameCell.textContent = changes.originalName;
-                            valueCell.textContent = changes.originalValue.toFixed(2);
+                            valueCell.textContent = changes.originalValue;
                         }
                     }
 
@@ -894,7 +894,7 @@ function saveChanges() {
                     // Update total for this row
                     const currentQty = changes.hasQtyChange ? changes.currentQty : (parseInt(qtyCell.textContent) || 0);
                     const currentValue = parseFloat(valueCell.textContent) || 0;
-                    totalCell.textContent = (currentQty * currentValue).toFixed(2);
+                    totalCell.textContent = (currentQty * currentValue);
                 });
 
                 // Process any additional rows that need to be deleted
@@ -926,7 +926,7 @@ function saveChanges() {
                 changedRows.forEach(({ cells, changes }) => {
                     if (changes.hasNameChange) {
                         cells.nameCell.textContent = changes.originalName;
-                        cells.valueCell.textContent = changes.originalValue.toFixed(2);
+                        cells.valueCell.textContent = changes.originalValue;
                     }
                     // Preserve quantity changes even on error
                     if (changes.hasQtyChange) {
@@ -934,7 +934,7 @@ function saveChanges() {
                         cells.qtyCell.dataset.original = changes.currentQty.toString();
                         // Update total
                         const currentValue = parseFloat(cells.valueCell.textContent) || 0;
-                        cells.totalCell.textContent = (changes.currentQty * currentValue).toFixed(2);
+                        cells.totalCell.textContent = (changes.currentQty * currentValue);
                     }
                 });
             }
@@ -961,7 +961,7 @@ function updateBackendResults(table) {
     });    // Update the grand total display
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = `
-        <h3><p>Grand Total: <strong>${grandTotal.toFixed(2)} hunters</strong>${hasUnsavedChanges ? ' <span style="color: #808080; font-size: 0.7em;">(Edited)</span>' : ''}</p></h3>
+        <h3><p>Grand Total: ${grandTotal} fv [${grandTotal.toFixed(3)/40} hv] ${hasUnsavedChanges ? ' <span style="color: #808080; font-size: 0.7em;">(Edited)</span>' : ''}</p></h3>
     `;
 }
 
