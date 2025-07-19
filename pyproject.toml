@@ -1,7 +1,0 @@
-[build-system]
-requires = ["setuptools>=65.5.1", "wheel>=0.38.4"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "ftf_inv_calc"
-version = "0.1.0"

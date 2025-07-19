@@ -1,5 +1,5 @@
-setuptools>=65.5.1
-wheel>=0.38.4
+setuptools==68.2.2
+wheel==0.41.2
 Flask==2.0.1
 Werkzeug==2.2.2
 gunicorn==20.1.0
@@ -8,8 +8,6 @@ numpy==1.24.3
 Pillow==9.5.0
 pytesseract==0.3.10
 python-dotenv==1.0.0
-fuzzywuzzy==0.18.0
-python-Levenshtein==0.21.1
 click==8.0.4
 itsdangerous==2.0.1
 Jinja2==3.0.3
