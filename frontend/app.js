@@ -228,12 +228,6 @@ document.getElementById('processButton').addEventListener('click', async () => {
           // Check if total exists and is valid
         const total = data.total || 0;
         
-        // Check thresholds
-        const poorThreshold = files.length * 100;
-        const duperThreshold = files.length * 400;
-        const isPoor = total > poorThreshold;
-        const isDuper = total > duperThreshold;
-        
         // Jump to 100% after receiving results
         progressFill.style.transition = 'width 0.3s ease';
         progressFill.style.width = '100%';
@@ -242,10 +236,6 @@ document.getElementById('processButton').addEventListener('click', async () => {
         // Set appropriate message based on thresholds and total
         if (total === 0) {
             loadingMessageElement.textContent = "Done! (Empty inventory?)";
-        } else if (isDuper) {
-            loadingMessageElement.textContent = "Done!... Duper detected";
-        } else if (isPoor) {
-            loadingMessageElement.textContent = "Done! (you're poor)";
         } else {
             loadingMessageElement.textContent = "Done!";
         }
@@ -636,7 +626,7 @@ function toggleEditMode(editButton) {
                     text = text.replace(/[\r\n]/g, '');
                     if (cell === nameCell) {
                         text = text.replace(/\s+/g, ' ');
-                        text = text.replace(/[^a-zA-Z0-9 ]/g, '');
+                        text = text.replace(/[^a-zA-Z0-9' ]/g, ''); // Allow apostrophe
                         if (text.length > 25) text = text.slice(0, 25);
                     }
                     document.execCommand('insertText', false, text);
@@ -974,8 +964,8 @@ function validateItemName(event) {
     const range = selection.getRangeAt(0);
     const cursorPosition = range.startOffset;
 
-    // Only allow letters, numbers and spaces
-    let value = cell.textContent.replace(/[^a-zA-Z0-9 ]/g, '');
+    // Only allow letters, numbers, spaces, and apostrophes
+    let value = cell.textContent.replace(/[^a-zA-Z0-9' ]/g, '');
     
     // If we're already at max length and trying to add more characters, block the addition
     if (prevContent.length === 25 && value.length > prevContent.length) {
@@ -1030,7 +1020,6 @@ function updateRowNumbers(table) {
 }
 
 function addNewRow(table) {
-    // Get the next row number
     const nextRowNumber = table.querySelectorAll('tr').length;
     const row = document.createElement('tr');
 
@@ -1039,8 +1028,8 @@ function addNewRow(table) {
         <td>${nextRowNumber}</td>
         <td data-original="" contenteditable="true"></td>
         <td data-original="1" contenteditable="true">1</td>
-        <td data-original="0.00">0.00</td>
-        <td>0.00</td>
+        <td data-original="0">0</td>
+        <td>0</td>
         <td class="delete-column">
             <button class="delete-btn">✕</button>
         </td>
@@ -1088,7 +1077,7 @@ function addNewRow(table) {
             text = text.replace(/[\r\n]/g, '');
             if (cell === nameCell) {
                 text = text.replace(/\s+/g, ' ');
-                text = text.replace(/[^a-zA-Z0-9 ]/g, '');
+                text = text.replace(/[^a-zA-Z0-9' ]/g, ''); // Allow apostrophe
                 if (text.length > 25) text = text.slice(0, 25);
             }
             document.execCommand('insertText', false, text);

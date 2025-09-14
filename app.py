@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect
 import logging
 import tempfile
 import os
@@ -36,8 +36,17 @@ app = Flask(__name__, static_folder='frontend')
 
 # Serve the frontend (index.html) page
 @app.route('/')
-def serve_frontend():
-    return send_from_directory('frontend', 'index.html')
+@app.route('/calculator')
+def serve_calculator():
+    return send_from_directory('frontend', 'calculator.html')
+
+@app.route('/guide')
+def serve_guide():
+    return send_from_directory('frontend', 'guide.html')
+
+@app.route('/trade')
+def serve_trade():
+    return send_from_directory('frontend', 'trade.html')
 
 # Serve ftf_items.json for item validation
 @app.route('/ftf_items.json')
@@ -110,6 +119,9 @@ if __name__ == '__main__':
     os.environ['FLASK_ENV'] = 'production'
     cli = sys.modules['flask.cli']
     cli.show_server_banner = lambda *x: None
+    
+    logger.info("Starting Flask server at http://127.0.0.1:5000")
+    app.run(debug=DEBUG_MODE)
     
     logger.info("Starting Flask server at http://127.0.0.1:5000")
     app.run(debug=DEBUG_MODE)
