@@ -1,4 +1,9 @@
-
+/* Global Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 .container, .second-container, .trade-page-container {
     background: linear-gradient(160deg, #400078 0%, #2d0054 100%);
