@@ -12,12 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeSlot = null;
     let currentRarity = 'all';
     let currentSHG = null; // Track the active SHG button
+    let shgExceptions8020 = new Set();
+    let shgExceptionsFull = new Set();
 
-    // Add SHG buttons to rarity sidebar
+    // Add HG buttons to rarity sidebar
     const shgButtons = document.createElement('div');
     shgButtons.className = 'shg-buttons';
     shgButtons.innerHTML = `
-        <div class="shg-btn" data-shg="s">S</div>
         <div class="shg-btn" data-shg="h">H</div>
         <div class="shg-btn" data-shg="g">G</div>
     `;
@@ -33,6 +34,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             allItems = data.items;
             updateDisplayedItems();
+            // load exceptions
+            try {
+                const exResp = await fetch('/shg_exceptions.json');
+                const exData = await exResp.json();
+                if (Array.isArray(exData.exceptions_80_20)) {
+                    shgExceptions8020 = new Set(exData.exceptions_80_20.map(s => s.toLowerCase()));
+                }
+                if (Array.isArray(exData.exceptions_full)) {
+                    shgExceptionsFull = new Set(exData.exceptions_full.map(s => s.toLowerCase()));
+                }
+            } catch (e) {
+                console.warn('Could not load shg_exceptions.json', e);
+            }
         } catch (error) {
             console.error("Failed to load item list:", error);
             itemList.innerHTML = '<p style="color: red;">Could not load items.</p>';
@@ -71,6 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             itemEl.dataset.name = item.name;
             itemEl.dataset.value = item.value;
+            // store rarity so we can apply modifier rules later
+            if (item.rarity) itemEl.dataset.rarity = item.rarity;
             itemList.appendChild(itemEl);
         });
     }
@@ -139,26 +155,68 @@ document.addEventListener('DOMContentLoaded', () => {
     function selectItem(e) {
         const modalItem = e.target.closest('.modal-item');
         if (modalItem && activeSlot) {
-            const name = modalItem.dataset.name;
-            const value = modalItem.dataset.value;
+                const name = modalItem.dataset.name;
+                const value = modalItem.dataset.value;
+                const rarity = (modalItem.dataset.rarity || '').toLowerCase();
             const imgSrc = modalItem.querySelector('img').src;
 
+            // compute displayed value based on rarity and current modifier
+            let baseVal = Number(value) || 0;
+            activeSlot.dataset.baseValue = String(baseVal);
+            let displayedValue = baseVal;
+
+            // Helper to check exceptions
+            const nameKey = (name || '').toLowerCase();
+            const isFull = shgExceptionsFull.has(nameKey);
+            const is8020 = shgExceptions8020.has(nameKey);
+
+            // Full-exception: always take 100% of base value regardless of modifier
+            if (isFull) {
+                displayedValue = baseVal;
+            } else if (rarity === 'legendary' && currentSHG) {
+                // Legendary: hammer 70% (h), gem 30% (g)
+                if (currentSHG === 'h') displayedValue = computeAdjustedValue(baseVal, 0.7);
+                else if (currentSHG === 'g') displayedValue = computeAdjustedValue(baseVal, 0.3);
+            } else if (['epic', 'rare', 'common'].includes(rarity)) {
+                // Default for epic/rare/common: 50:50 (hammer:gem) when modifier selected
+                if (currentSHG) {
+                    if (is8020) {
+                        // exceptions: gem 80%, hammer 20% (gem first)
+                        if (currentSHG === 'g') displayedValue = computeAdjustedValue(baseVal, 0.8);
+                        else if (currentSHG === 'h') displayedValue = computeAdjustedValue(baseVal, 0.2);
+                    } else {
+                        // default 50:50 split
+                        displayedValue = computeAdjustedValue(baseVal, 0.5);
+                    }
+                }
+            }
+
+            activeSlot.dataset.value = String(displayedValue);
+            // Now render inner HTML with the computed displayed value (respecting mode)
             activeSlot.innerHTML = `
                 <div class="item-slot-content">
                     <div class="item-slot-img">
                         <img src="${imgSrc}" alt="${name}">
                     </div>
                     <div class="item-slot-name single-line">${name}</div>
+                    <div class="item-slot-value value">${formatNumberForDisplay(applyModeToValue(displayedValue))}</div>
                 </div>
             `;
-            activeSlot.dataset.value = value;
             activeSlot.classList.add('filled');
+            
+            // Add SHG indicator if a modifier (h or g only) is selected
+            if (currentSHG && (currentSHG === 'h' || currentSHG === 'g')) {
+                activeSlot.dataset.shg = currentSHG;
+            } else {
+                delete activeSlot.dataset.shg;
+            }
             
             // Adjust font size if text overflows
             const nameEl = activeSlot.querySelector('.item-slot-name');
             adjustTextSize(nameEl);
             
             closeModal();
+            // Refresh displays/totals to ensure mode (HV) is applied immediately
             calculateAll();
         }
     }
@@ -176,14 +234,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Calculate total value for a grid and update display
+    // Compute adjusted displayed value according to rule:
+    // - if raw value < 5 -> show 1 decimal place (rounded to 0.1)
+    // - else -> round to nearest integer
+    function computeAdjustedValue(base, multiplier) {
+        const raw = base * multiplier;
+        if (raw < 5) {
+            return Math.round(raw * 10) / 10; // one decimal
+        }
+        return Math.round(raw);
+    }
+
+    // Format numbers for display: one decimal if <5 and not integer, else integer with locale
+    function formatNumberForDisplay(n) {
+        const num = Number(n) || 0;
+        if (num < 5 && num !== Math.round(num)) {
+            return num.toFixed(1);
+        }
+        return Math.round(num).toLocaleString();
+    }
+
+    // Calculate total value for a grid and update display (respect HV mode)
     function calculateTotal(gridElement, totalElement) {
         const slots = gridElement.querySelectorAll('.item-slot');
         let total = 0;
         slots.forEach(slot => {
-            total += Number(slot.dataset.value) || 0;
+            const raw = Number(slot.dataset.value) || 0;
+            const v = applyModeToValue(raw);
+            total += Number(v) || 0;
         });
-        totalElement.textContent = `${total}`;
+        totalElement.textContent = formatNumberForDisplay(total);
         return total;
     }
 
@@ -227,7 +307,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    function refreshDisplays() {
+        // Update numeric display on each populated slot to respect current mode
+        document.querySelectorAll('.item-slot').forEach(slot => {
+            const valEl = slot.querySelector('.value');
+            if (!valEl) return;
+            const raw = Number(slot.dataset.value) || 0;
+            const displayVal = applyModeToValue(raw);
+            valEl.textContent = formatNumberForDisplay(displayVal);
+        });
+    }
+
     function calculateAll() {
+        // refresh slot displays first so totals reflect current mode
+        refreshDisplays();
         const yourTotal = calculateTotal(yourGrid, document.getElementById('your-total'));
         const theirTotal = calculateTotal(theirGrid, document.getElementById('their-total'));
         calculateWFL(yourTotal, theirTotal);
@@ -277,24 +370,29 @@ document.addEventListener('DOMContentLoaded', () => {
         slot.innerHTML = '';
         slot.classList.remove('filled');
         slot.dataset.value = '0';
+        delete slot.dataset.shg;  // Remove SHG indicator
 
         // Get all filled slots after the removed one
         const filledSlots = slots.slice(removedIndex + 1)
             .filter(s => s.classList.contains('filled'));
 
-        // Move each subsequent item forward
+        // Move each subsequent item forward, preserving shg and baseValue
         filledSlots.forEach((filledSlot, i) => {
             const targetSlot = slots[removedIndex + i];
-            
+
             // Move the content
             targetSlot.innerHTML = filledSlot.innerHTML;
-            targetSlot.dataset.value = filledSlot.dataset.value;
+            targetSlot.dataset.value = filledSlot.dataset.value || '0';
+            if (filledSlot.dataset.shg) targetSlot.dataset.shg = filledSlot.dataset.shg;
+            if (filledSlot.dataset.baseValue) targetSlot.dataset.baseValue = filledSlot.dataset.baseValue;
             targetSlot.classList.add('filled');
-            
+
             // Clear the original slot
             filledSlot.innerHTML = '';
             filledSlot.classList.remove('filled');
             filledSlot.dataset.value = '0';
+            delete filledSlot.dataset.shg;
+            delete filledSlot.dataset.baseValue;
         });
 
         calculateAll();
@@ -337,14 +435,51 @@ document.addEventListener('DOMContentLoaded', () => {
     raritySidebar.addEventListener('click', handleRarityChange);
     resetBtn.addEventListener('click', resetTrade);
 
+    // FV/HV mode: fv = full values (default), hv = divide displayed values by 40
+    let modeHV = false; // false = fv, true = hv
+
+    function renderFvHvSwitch() {
+        // append switch to trade container (assume .trade-layout parent exists)
+        const tradeLayout = document.querySelector('.trade-layout') || document.body;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'fv-hv-switch';
+        wrapper.innerHTML = `
+            <div class="label">Mode</div>
+            <div class="fv-hv-toggle" id="fv-hv-toggle" title="Toggle FV/HV">
+                <div class="option">fv</div>
+                <div class="option">hv</div>
+                <div class="knob">fv</div>
+            </div>
+        `;
+        tradeLayout.appendChild(wrapper);
+
+        const toggle = wrapper.querySelector('.fv-hv-toggle');
+        const knob = toggle.querySelector('.knob');
+        toggle.addEventListener('click', () => {
+            modeHV = !modeHV;
+            toggle.classList.toggle('hv', modeHV);
+            knob.textContent = modeHV ? 'hv' : 'fv';
+            // recalc and re-render totals
+            calculateAll();
+        });
+    }
+
+    // helper to apply mode adjustment: when in HV, divide displayed numeric values by 40
+    function applyModeToValue(val) {
+        const num = Number(val);
+        if (isNaN(num)) return val;
+        if (!modeHV) return num;
+        // hv mode: divide by 40
+        const adjusted = num / 40;
+        // show one decimal when <5, else integer (reuse computeAdjustedValue logic via multiplier)
+        if (adjusted < 5) return Math.round(adjusted * 10) / 10;
+        return Math.round(adjusted);
+    }
+
     // Initial setup
     createGridSlots(yourGrid);
     createGridSlots(theirGrid);
     fetchItems();
+    renderFvHvSwitch();
     calculateAll();
 });
-    // Initial setup
-    createGridSlots(yourGrid);
-    createGridSlots(theirGrid);
-    fetchItems();
-    calculateAll();

@@ -746,6 +746,28 @@ h1 {
     position: relative;
 }
 
+.item-slot[data-shg="h"]::before,
+.item-slot[data-shg="g"]::before {
+    content: attr(data-shg);
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 18px;
+    height: 18px;
+    background: #6a1ee0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
 .item-slot-content {
     width: 100%;
     height: 100%;
@@ -824,6 +846,64 @@ h1 {
     align-self: center;
     padding: 0 1rem; /* Reduced */
 }
+
+/* FV/HV slider (bottom-right of trade container) */
+.fv-hv-switch {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1000;
+}
+.fv-hv-switch .label {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.fv-hv-toggle {
+    --width: 72px;
+    --height: 32px;
+    width: var(--width);
+    height: var(--height);
+    background: rgba(0,0,0,0.18);
+    border: 2px solid #6400c1;
+    border-radius: 999px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.fv-hv-toggle .option {
+    flex: 1 1 50%;
+    text-align: center;
+    color: #ccc;
+    font-weight: 700;
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+.fv-hv-toggle .knob {
+    position: absolute;
+    width: calc(var(--width) / 2 - 8px);
+    height: calc(var(--height) - 8px);
+    background: linear-gradient(90deg, #6a1ee0, #8a2be2);
+    border-radius: 999px;
+    top: 4px;
+    left: 4px;
+    transition: left 0.18s cubic-bezier(.2,.9,.2,1);
+    box-shadow: 0 4px 12px rgba(106,30,224,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+}
+.fv-hv-toggle.hv .knob { left: calc(50% + 4px); }
+.fv-hv-toggle.hv { border-color: #8a2be2; }
+.fv-hv-toggle.hv .option { color: #fff; }
 
 #wfl-result {
     font-size: 2.3rem;
@@ -951,7 +1031,8 @@ h1 {
 /* New buttons style */
 .shg-buttons {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
+    gap: 1rem;
     margin-top: 0.75rem;
 }
 
@@ -973,8 +1054,8 @@ h1 {
 }
 
 .shg-btn:hover {
-    background-color: hsl(267, 100%, 50%);
-    border-color: #8a2be2;
+    background-color: #431686;
+    border-color: #6a1ee0;
 }
 
 .shg-btn.active {
@@ -999,6 +1080,12 @@ h1 {
     color: #fff;
     font-size: 1rem;
     margin-bottom: 1rem;
+    outline: none;
+}
+
+#item-search:focus {
+    border-color: #8a2be2;
+    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.25);
 }
 
 .item-list {
