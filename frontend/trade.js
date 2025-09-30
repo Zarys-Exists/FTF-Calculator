@@ -198,8 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="item-slot-img">
                         <img src="${imgSrc}" alt="${name}">
                     </div>
-                    <div class="item-slot-name single-line">${name}</div>
-                    <div class="item-slot-value value">${formatNumberForDisplay(applyModeToValue(displayedValue))}</div>
+                        <div class="item-slot-name single-line">${name}</div>
                 </div>
             `;
             activeSlot.classList.add('filled');
@@ -211,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 delete activeSlot.dataset.shg;
             }
             
-            // Adjust font size if text overflows
+            // Adjust font size for name if it overflows
             const nameEl = activeSlot.querySelector('.item-slot-name');
             adjustTextSize(nameEl);
             
@@ -220,6 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
             calculateAll();
         }
     }
+
+    // adjustValueSize removed — per-slot numeric values are not rendered and datasets are used for calculations
 
     // Add this new function
     function adjustTextSize(element) {
@@ -245,9 +246,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.round(raw);
     }
 
-    // Format numbers for display: one decimal if <5 and not integer, else integer with locale
+    // Remove trailing zeros from decimal numbers
+    function removeTrailingZeros(numStr) {
+        return numStr.replace(/\.?0+$/, '');
+    }
+
+    // Format numbers without trailing zeros
+    function formatDisplayValue(n) {
+        const num = Number(n) || 0;
+        // Convert to string with up to 3 decimal places, then remove trailing zeros
+        return removeTrailingZeros(num.toFixed(3));
+    }
+
+    // Format numbers for display: three decimals for HV mode, one decimal if <5 and not integer in FV mode
     function formatNumberForDisplay(n) {
         const num = Number(n) || 0;
+        // In HV mode, show up to 3 decimal places, no trailing zeros
+        if (modeHV) {
+            return formatDisplayValue(num);
+        }
+        // FV mode: one decimal if <5 and not integer, else integer
         if (num < 5 && num !== Math.round(num)) {
             return num.toFixed(1);
         }
@@ -299,10 +317,16 @@ document.addEventListener('DOMContentLoaded', () => {
             resultEl.textContent = 'Fair';
             resultEl.classList.add('wfl-result-fair');
         } else if (difference > 0) {
-            resultEl.textContent = theirValue-yourValue + ' Win';
+            const winAmt = modeHV ? formatDisplayValue(theirValue-yourValue) : (theirValue-yourValue);
+            const modeLabel = modeHV ? 'hv' : 'fv';
+            // amount on first line, mode + Win on second line
+            resultEl.innerHTML = `${winAmt}<br><span class="wfl-mode">${modeLabel} Win</span>`;
             resultEl.classList.add('wfl-result-win');
         } else {
-            resultEl.textContent = yourValue - theirValue + ' Loss';
+            const lossAmt = modeHV ? formatDisplayValue(yourValue-theirValue) : (yourValue-theirValue);
+            const modeLabel = modeHV ? 'hv' : 'fv';
+            // amount on first line, mode + Loss on second line
+            resultEl.innerHTML = `${lossAmt}<br><span class="wfl-mode">${modeLabel} Loss</span>`;
             resultEl.classList.add('wfl-result-lose');
         }
     }
@@ -310,11 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function refreshDisplays() {
         // Update numeric display on each populated slot to respect current mode
         document.querySelectorAll('.item-slot').forEach(slot => {
-            const valEl = slot.querySelector('.value');
-            if (!valEl) return;
-            const raw = Number(slot.dataset.value) || 0;
-            const displayVal = applyModeToValue(raw);
-            valEl.textContent = formatNumberForDisplay(displayVal);
+            // No visible per-slot numeric value is rendered anymore; values are stored in dataset
+            // Ensure totals are still computed from dataset values only
+            return;
         });
     }
 
@@ -386,6 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (filledSlot.dataset.shg) targetSlot.dataset.shg = filledSlot.dataset.shg;
             if (filledSlot.dataset.baseValue) targetSlot.dataset.baseValue = filledSlot.dataset.baseValue;
             targetSlot.classList.add('filled');
+
+            // No visible per-slot numeric value to adjust
 
             // Clear the original slot
             filledSlot.innerHTML = '';
@@ -469,11 +493,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const num = Number(val);
         if (isNaN(num)) return val;
         if (!modeHV) return num;
-        // hv mode: divide by 40
-        const adjusted = num / 40;
-        // show one decimal when <5, else integer (reuse computeAdjustedValue logic via multiplier)
-        if (adjusted < 5) return Math.round(adjusted * 10) / 10;
-        return Math.round(adjusted);
+        // hv mode: divide by 40 and keep full precision
+        return num / 40;
+        // Note: formatting is now handled by formatNumberForDisplay
     }
 
     // Initial setup

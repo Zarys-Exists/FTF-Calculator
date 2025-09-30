@@ -775,13 +775,16 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.25rem;
-    overflow: hidden; /* Add this to contain the text */
+    gap: 0.15rem; /* reduced gap */
+    overflow: hidden;
+    padding-bottom: 0.2rem; /* reduced padding */
 }
 
+/* .item-slot-value removed: per-slot numeric values are no longer shown */
+
 .item-slot-img {
-    width: 85%;
-    height: 75%;
+    width: 75%; /* reduced width */
+    height: 70%; /* reduced height */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -794,11 +797,11 @@ h1 {
 }
 
 .item-slot-name {
-    font-size: 0.7rem;
-    line-height: 1.2;
+    font-size: 0.65rem;
+    line-height: 1.1;
     text-align: center;
-    width: 90%;
-    max-width: 90%;
+    width: 85%;
+    max-width: 85%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -825,17 +828,27 @@ h1 {
     font-weight: 700;
     position: absolute;
     top: -5.5rem;
+    min-width: 200px; /* Ensure there's enough room for the value */
 }
 
-/* Position for left offer */
+/* Position for left offer (your offer) */
 .offer-container:first-child .total-value {
     left: 0;
+    text-align: left;
 }
 
-/* Position for right offer */
+/* Position for right offer (their offer) */
 .offer-container:last-child .total-value {
     right: 0;
+    text-align: right /* Right align the text */
 }
+
+    /* ID-specific overrides to guarantee alignment (highest specificity) */
+#their-total {
+    right: 0 !important;
+    text-align: right !important;
+}
+
 
 .wfl-container {
     display: flex;
@@ -851,11 +864,11 @@ h1 {
 .fv-hv-switch {
     position: absolute;
     right: 1rem;
-    bottom: 1rem;
+    bottom: -0.5rem;  /* Instead of top: 23.5rem */
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    z-index: 1000;
+    z-index: 100;
 }
 .fv-hv-switch .label {
     color: #fff;
@@ -863,8 +876,9 @@ h1 {
     font-size: 0.9rem;
 }
 .fv-hv-toggle {
-    --width: 72px;
-    --height: 32px;
+    /* Larger and responsive using rems */
+    --width: 8.5rem;   /* wider for visibility */
+    --height: 2.4rem;  /* slightly taller */
     width: var(--width);
     height: var(--height);
     background: rgba(0,0,0,0.18);
@@ -873,7 +887,7 @@ h1 {
     position: relative;
     display: flex;
     align-items: center;
-    padding: 4px;
+    padding: 0.3rem;
     cursor: pointer;
     transition: background 0.2s ease, border-color 0.2s ease;
 }
@@ -882,17 +896,17 @@ h1 {
     text-align: center;
     color: #ccc;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.95rem; /* slightly larger for readability */
     pointer-events: none;
 }
 .fv-hv-toggle .knob {
     position: absolute;
-    width: calc(var(--width) / 2 - 8px);
-    height: calc(var(--height) - 8px);
+    width: calc(var(--width) / 2 - 0.6rem);
+    height: calc(var(--height) - 0.6rem);
     background: linear-gradient(90deg, #6a1ee0, #8a2be2);
     border-radius: 999px;
-    top: 4px;
-    left: 4px;
+    top: 0.3rem;
+    left: 0.3rem;
     transition: left 0.18s cubic-bezier(.2,.9,.2,1);
     box-shadow: 0 4px 12px rgba(106,30,224,0.25);
     display: flex;
@@ -901,23 +915,31 @@ h1 {
     color: white;
     font-weight: 700;
 }
-.fv-hv-toggle.hv .knob { left: calc(50% + 4px); }
+.fv-hv-toggle.hv .knob { left: calc(50% + 0.3rem); }
 .fv-hv-toggle.hv { border-color: #8a2be2; }
 .fv-hv-toggle.hv .option { color: #fff; }
 
+/* Make the toggle slightly smaller on very narrow screens */
+@media (max-width: 420px) {
+    .fv-hv-toggle {
+        --width: 4.6rem; /* ~74px scaled down */
+        --height: 1.8rem;
+    }
+    .fv-hv-switch { bottom: -0.25rem; right: 0.75rem; }
+}
+
 #wfl-result {
-    font-size: 2.3rem;
+    font-size: 2rem;
     font-weight: 700;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1rem;
     border-radius: 0.5rem;
     transition: all 0.3s ease;
     min-width: 8rem;
     text-align: center;
-    height: 4rem; /* Add fixed height */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem; /* Add fixed margin */
+    height: auto; /* allow multiple lines */
+    display: inline-block;
+    line-height: 1.1; /* compact line height for stacked text */
+    margin-bottom: 1rem;
 }
 
 .wfl-result-win { color: #00eb37; }
@@ -931,6 +953,14 @@ h1 {
     color: #ffffff;
 }
 .wfl-result-lose { color: #e00016; }
+
+.wfl-mode {
+    display: block;
+    font-size: 1em; /* match parent (#wfl-result) font-size */
+    font-weight: 700;
+    opacity: 0.95;
+    margin-top: 0.1rem;
+}
 
 #reset-trade-btn {
     background: #6a1ee0;
