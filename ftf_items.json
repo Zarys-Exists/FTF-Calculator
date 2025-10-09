@@ -2,12 +2,12 @@
     "items": [
         {
             "name": "Party Balloons",
-            "value": 630,
+            "value": 620,
             "rarity": "legendary"
         },
         {
             "name": "Pumpkin Slice",
-            "value": 500,
+            "value": 480,
             "rarity": "legendary"
         },
         {
@@ -22,7 +22,7 @@
         },
         {
             "name": "Devilish Candle",
-            "value": 280,
+            "value": 270,
             "rarity": "legendary"
         },
         {
@@ -37,17 +37,17 @@
         },
         {
             "name": "Cherry Blossom Tree",
-            "value": 200,
+            "value": 220,
             "rarity": "legendary"
         },
         {
             "name": "Dark Bone Crusher",
-            "value": 180,
+            "value": 170,
             "rarity": "legendary"
         },
         {
             "name": "Pegasus Blade",
-            "value": 130,
+            "value": 125,
             "rarity": "legendary"
         },
         {
@@ -57,27 +57,27 @@
         },
         {
             "name": "Sand Castle",
-            "value": 95,
+            "value": 90,
             "rarity": "legendary"
         },
         {
             "name": "Easter Basket",
-            "value": 120,
+            "value": 115,
             "rarity": "legendary"
         },
         {
             "name": "Strawberry Jelly Basket",
-            "value": 100,
+            "value": 90,
             "rarity": "legendary"
         },
         {
             "name": "Merry Music Box",
-            "value": 125,
+            "value": 120,
             "rarity": "legendary"
         },
         {
             "name": "Marine Anchor",
-            "value": 115,
+            "value": 110,
             "rarity": "legendary"
         },
         {
@@ -87,17 +87,17 @@
         },
         {
             "name": "Soulless Theater",
-            "value": 120,
+            "value": 125,
             "rarity": "legendary"
         },
         {
             "name": "Blueberry Jam Basket",
-            "value": 85,
+            "value": 80,
             "rarity": "legendary"
         },
         {
             "name": "Bitter Lemonade Basket",
-            "value": 85,
+            "value": 80,
             "rarity": "legendary"
         },
         {
@@ -117,7 +117,7 @@
         },
         {
             "name": "Lunar Scepter",
-            "value": 95,
+            "value": 90,
             "rarity": "legendary"
         },
         {
@@ -167,7 +167,7 @@
         },
         {
             "name": "Easter Chick",
-            "value": 60,
+            "value": 55,
             "rarity": "legendary"
         },
         {
@@ -182,7 +182,7 @@
         },
         {
             "name": "Jollyday Batter",
-            "value": 55,
+            "value": 50,
             "rarity": "legendary"
         },
         {
@@ -192,12 +192,12 @@
         },
         {
             "name": "Yuletide Gift",
-            "value": 70,
+            "value": 75,
             "rarity": "legendary"
         },
         {
             "name": "Autumn Scarecrow",
-            "value": 55,
+            "value": 50,
             "rarity": "legendary"
         },
         {
@@ -207,7 +207,7 @@
         },
         {
             "name": "Festive Candelabra",
-            "value": 55,
+            "value": 50,
             "rarity": "legendary"
         },
         {
@@ -237,7 +237,7 @@
         },
         {
             "name": "Santa's Sleigh",
-            "value": 32,
+            "value": 30,
             "rarity": "legendary"
         },
         {
@@ -252,7 +252,7 @@
         },
         {
             "name": "Toy Box",
-            "value": 32,
+            "value": 30,
             "rarity": "legendary"
         },
         {
@@ -277,12 +277,12 @@
         },
         {
             "name": "Golden Firework",
-            "value": 32,
+            "value": 30,
             "rarity": "legendary"
         },
         {
             "name": "Aurora Abolisher",
-            "value": 32,
+            "value": 30,
             "rarity": "legendary"
         },
         {
@@ -302,12 +302,12 @@
         },
         {
             "name": "Snow Globe",
-            "value": 20,
+            "value": 18,
             "rarity": "legendary"
         },
         {
             "name": "Red Nutcracker",
-            "value": 20,
+            "value": 18,
             "rarity": "legendary"
         },
         {
@@ -322,22 +322,22 @@
         },
         {
             "name": "Candy Cane Jar",
-            "value": 20,
-            "rarity": "legendary"
-        },
-        {
-            "name": "Santa Boot",
             "value": 18,
             "rarity": "legendary"
         },
         {
+            "name": "Santa Boot",
+            "value": 17,
+            "rarity": "legendary"
+        },
+        {
             "name": "Cocoa Machine",
-            "value": 20,
+            "value": 18,
             "rarity": "legendary"
         },
         {
             "name": "Toy Santa",
-            "value": 17,
+            "value": 16,
             "rarity": "legendary"
         },
         {
@@ -362,7 +362,7 @@
         },
         {
             "name": "Lilium Bush",
-            "value": 19,
+            "value": 20,
             "rarity": "legendary"
         },
         {
@@ -502,7 +502,7 @@
         },
         {
             "name": "Krampus Chimney",
-            "value": 9,
+            "value": 8,
             "rarity": "legendary"
         },
         {
@@ -772,12 +772,12 @@
         },
         {
             "name": "Lemonade Jar",
-            "value": 85,
+            "value": 90,
             "rarity": "Epic"
         },
         {
             "name": "Vanillaberry cake",
-            "value": 60,
+            "value": 65,
             "rarity": "Epic"
         },
         {
@@ -873,21 +873,21 @@
             "rarity": "Epic"
         },{
             "name": "Moonlit Butterflies",
-            "value": 6,
+            "value": 7,
             "rarity": "Epic"
         },
         {
             "name": "Sunlit Butterflies",
-            "value": 6,
+            "value": 7,
             "rarity": "Epic"
         },{
             "name": "Cursed Voodoo",
-            "value": 8,
+            "value": 10,
             "rarity": "Epic"
         },
         {
             "name": "Magical Voodoo",
-            "value": 8,
+            "value": 10,
             "rarity": "Epic"
         },{
             "name": "Zombie Brain Jar",
@@ -900,12 +900,12 @@
             "rarity": "Epic"
         },{
             "name": "Sweet snowcone",
-            "value": 6,
+            "value": 7,
             "rarity": "Epic"
         },
         {
             "name": "Sour snowcone",
-            "value": 6,
+            "value": 7,
             "rarity": "Epic"
         },{
             "name": "Green Peppermint",
@@ -924,32 +924,32 @@
         },
         {
             "name": "Fall Foliage",
-            "value": 6,
+            "value": 7,
             "rarity": "Epic"
         },
         {
             "name": "Autumn Foliage",
-            "value": 6,
+            "value": 7,
             "rarity": "Epic"
         },
         {
             "name": "Princess Palace",
-            "value": 5,
+            "value": 6,
             "rarity": "Epic"
         },
         {
             "name": "Forbidden Fortress",
-            "value": 5,
+            "value": 6,
             "rarity": "Epic"
         },
         {
             "name": "Broken Mirror",
-            "value": 5,
+            "value": 6,
             "rarity": "Epic"
         },
         {
             "name": "Cursed Painting",
-            "value": 5,
+            "value": 6,
             "rarity": "Epic"
         },
         {
@@ -1101,16 +1101,16 @@
             "rarity": "Rare"
         },{
             "name": "Cookies N' Milk",
-            "value": 8,
+            "value": 10,
             "rarity": "Rare"
         },
         {
             "name": "Ginger Cookies",
-            "value": 8,
+            "value": 10,
             "rarity": "Rare"
         },{
             "name": "Santa's Letter",
-            "value": 8,
+            "value": 10,
             "rarity": "Rare"
         },
         {
@@ -1138,16 +1138,16 @@
             "rarity": "Rare"
         },{
             "name": "Midnight Sea",
-            "value": 5,
+            "value": 6,
             "rarity": "Rare"
         },
         {
             "name": "Underwater Ocean",
-            "value": 5,
+            "value": 6,
             "rarity": "Rare"
         },{
             "name": "Coral Reefs",
-            "value": 5,
+            "value": 6,
             "rarity": "Rare"
         },
         {
@@ -1258,31 +1258,31 @@
             "rarity": "Rare"
         },{
             "name": "Overseer",
-            "value": 2,
+            "value": 3,
             "rarity": "Rare"
         },
         {
             "name": "Hellstone",
-            "value": 2,
+            "value": 3,
             "rarity": "Rare"
         },{
             "name": "Stained Web",
-            "value": 2,
+            "value": 3,
             "rarity": "Rare"
         },
         {
             "name": "Wheat Field",
-            "value": 2,
+            "value": 3,
             "rarity": "Rare"
         },
         {
             "name": "Corn Crops",
-            "value": 2,
+            "value": 3,
             "rarity": "Rare"
         },
         {
             "name": "Vineyard",
-            "value": 2,
+            "value": 3,
             "rarity": "Rare"
         },{
             "name": "Secret Santa",
@@ -1340,7 +1340,7 @@
         },
         {
             "name": "Glowy Bush",
-            "value": 45,
+            "value": 50,
             "rarity": "Common"
         },
         {
@@ -1449,20 +1449,20 @@
         },
         {
             "name": "Neon Black",
-            "value": 4,
+            "value": 3,
             "rarity": "Common"
         },{
             "name": "Neon Pink",
-            "value": 4,
+            "value": 3,
             "rarity": "Common"
         },
         {
             "name": "Neon Orange",
-            "value": 4,
+            "value": 3,
             "rarity": "Common"
         },{
             "name": "Neon Green",
-            "value": 4,
+            "value": 3,
             "rarity": "Common"
         },
         {
@@ -1689,42 +1689,42 @@
         },
         {
             "name": "Mr Lunatic",
-            "value": 1,
+            "value": 2,
             "rarity": "Common"
         },
         {
             "name": "Crescent Moon",
-            "value": 1,
+            "value": 2,
             "rarity": "Common"
         },
         {
             "name": "Magical Spider",
-            "value": 1,
+            "value": 2,
             "rarity": "Common"
         },
         {
             "name": "Cave Monster",
-            "value": 1,
+            "value": 2,
             "rarity": "Common"
         },
         {
             "name": "Vibrant Leaves",
-            "value": 1,
+            "value": 2,
             "rarity": "Common"
         },
         {
             "name": "Haystack",
-            "value": 1,
+            "value": 2,
             "rarity": "Common"
         },
         {
             "name": "Cinnamon Latte",
-            "value": 1,
+            "value": 2,
             "rarity": "Common"
         },
         {
             "name": "Leaves N' Acorns",
-            "value": 1,
+            "value": 2,
             "rarity": "Common"
         },{
             "name": "Winterly Night",
