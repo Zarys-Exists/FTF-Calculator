@@ -5,6 +5,12 @@
     box-sizing: border-box;
 }
 
+html {
+    overflow-x: hidden;
+    background: linear-gradient(135deg, #27004a 0%, #1a0033 100%);
+    background-attachment: fixed;
+}
+
 .container, .second-container, .trade-page-container {
     background: linear-gradient(160deg, #400078 0%, #2d0054 100%);
     padding: 2.5rem;
@@ -19,13 +25,14 @@
   
 /* Background and fonts */
 body {
-    background: linear-gradient(135deg, #27004a 0%, #1a0033 100%);
+    background: transparent;
     font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 0.5rem 2rem;
+    overflow-x: hidden;
 }
 
 .site-header {
@@ -783,11 +790,13 @@ h1 {
 /* .item-slot-value removed: per-slot numeric values are no longer shown */
 
 .item-slot-img {
-    width: 75%; /* reduced width */
-    height: 70%; /* reduced height */
+    width: 92%; /* larger image width to occupy more of the slot */
+    height: 86%; /* larger image height */
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative; /* allow z-index so qty can overlap */
+    z-index: 1;
 }
 
 .item-slot-img img {
@@ -821,6 +830,56 @@ h1 {
     border: 1px solid #8a2be2;
     font-weight: 500;
 }
+
+/* Quantity control inside item slot (sleek compact UI) */
+/* Compact quantity control positioned inside the slot so it doesn't change layout */
+.qty-control {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(0,0,0,0.28);
+    border-radius: 999px;
+    padding: 2px;
+    z-index: 30; /* ensure control sits above the image */
+}
+.qty-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: none;
+    background: transparent; /* make the buttons transparent */
+    color: #fff;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: none;
+    font-size: 0.9rem;
+    line-height: 1;
+}
+.qty-btn:active { transform: translateY(1px); }
+.qty-input {
+    width: 36px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    appearance: none;
+    -moz-appearance: textfield;
+    padding: 0;
+}
+.qty-input:focus { outline: 2px solid rgba(138,43,226,0.45); border-radius: 6px; }
+.qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Slightly increase img area so it fills more of the slot */
+.item-slot-img { height: 86%; }
 
 .total-value {
     color: #fff;
@@ -1188,34 +1247,121 @@ h1 {
     line-height: 1.2;
 }
 
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .trade-layout {
+        flex-direction: column;
+        align-items: center;
+    }
+    .wfl-container {
+        order: -1; /* Move WFL result to the top on mobile */
+        margin-bottom: 2rem;
+    }
+}
+
+/* Guide Page Styling */
 .guide-content {
-    font-size: 1.5rem;
-    padding: 2px;
-    margin: 2px;
-    color: #ffffff;
+    width: 100%;
+    max-width: 900px;
+    padding: 3rem 2.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .trade-layout {
-        flex-direction: column;
-        align-items: center;
-    }
-    .wfl-container {
-        order: -1; /* Move WFL result to the top on mobile */
-        margin-bottom: 2rem;
-    }
+.guide-section {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(138, 43, 226, 0.2);
 }
 
-/* Responsive adjustments */
+.guide-section:last-child {
+    border-bottom: none;
+}
+
+.guide-section h2 {
+    color: #e0b0ff;
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.guide-section p {
+    color: #e8e8e8;
+    font-size: 1.15rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+}
+
+/* Make links in the guide use the same pastel purple as headings */
+.guide-content a {
+    color: #e0b0ff;
+    text-decoration: none;
+}
+.guide-content a:hover,
+.guide-content a:focus {
+    color: #b366ff;
+    text-decoration: underline;
+}
+
+.guide-list {
+    list-style: none;
+    margin-left: 0;
+    margin-bottom: 2rem;
+}
+
+.guide-list li {
+    background: rgba(138, 43, 226, 0.08);
+    border-left: 4px solid #8a2be2;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    border-radius: 0.5rem;
+    color: #e0e0e0;
+    line-height: 1.8;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+}
+
+.guide-list li:hover {
+    background: rgba(138, 43, 226, 0.15);
+    border-left-color: #b366ff;
+    transform: translateX(8px);
+}
+
+.guide-list li strong {
+    color: #d0a0ff;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.25rem;
+}
+
+.guide-closing {
+    font-style: italic;
+    color: #c8a8d8;
+    background: rgba(138, 43, 226, 0.1);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #8a2be2;
+    font-size: 1.05rem;
+    margin-top: 2rem;
+}
+
 @media (max-width: 768px) {
-    .trade-layout {
-        flex-direction: column;
-        align-items: center;
+    .guide-content {
+        padding: 2rem 1.5rem;
     }
-    .wfl-container {
-        order: -1; /* Move WFL result to the top on mobile */
-        margin-bottom: 2rem;
+    
+    .guide-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .guide-list li {
+        padding: 1rem 1.25rem;
+        font-size: 0.9rem;
     }
 }
 

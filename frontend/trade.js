@@ -153,6 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle item selection from the modal
     function selectItem(e) {
+        e.preventDefault();
+        e.stopPropagation();
         const modalItem = e.target.closest('.modal-item');
         if (modalItem && activeSlot) {
                 const name = modalItem.dataset.name;
@@ -192,13 +194,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             activeSlot.dataset.value = String(displayedValue);
-            // Now render inner HTML with the computed displayed value (respecting mode)
+            // default quantity
+            activeSlot.dataset.quantity = '1';
+            // Now render inner HTML with the computed displayed value and quantity control
             activeSlot.innerHTML = `
                 <div class="item-slot-content">
                     <div class="item-slot-img">
                         <img src="${imgSrc}" alt="${name}">
                     </div>
-                        <div class="item-slot-name single-line">${name}</div>
+                    <div class="qty-control" data-name="${name}">
+                        <button class="qty-btn qty-decrease" type="button" aria-label="Decrease quantity">−</button>
+                        <input class="qty-input" type="number" min="1" max="100" step="1" value="1" aria-label="Quantity">
+                        <button class="qty-btn qty-increase" type="button" aria-label="Increase quantity">+</button>
+                    </div>
                 </div>
             `;
             activeSlot.classList.add('filled');
@@ -210,10 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 delete activeSlot.dataset.shg;
             }
             
-            // Adjust font size for name if it overflows
+            // Adjust font size for name if it exists (kept for backward compatibility)
             const nameEl = activeSlot.querySelector('.item-slot-name');
-            adjustTextSize(nameEl);
-            
+            if (nameEl) adjustTextSize(nameEl);
+
+            // Close modal immediately and stop further propagation
             closeModal();
             // Refresh displays/totals to ensure mode (HV) is applied immediately
             calculateAll();
@@ -233,6 +242,15 @@ document.addEventListener('DOMContentLoaded', () => {
             fontSize -= 0.05;
             element.style.fontSize = `${fontSize}rem`;
         }
+    }
+
+    // Set quantity for a slot (clamped 1..100) and refresh totals
+    function setSlotQuantity(slot, qty) {
+        const n = Math.max(1, Math.min(100, Math.round(Number(qty) || 1)));
+        slot.dataset.quantity = String(n);
+        const input = slot.querySelector('.qty-input');
+        if (input) input.value = String(n);
+        calculateAll();
     }
 
     // Compute adjusted displayed value according to rule:
@@ -278,7 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let total = 0;
         slots.forEach(slot => {
             const raw = Number(slot.dataset.value) || 0;
-            const v = applyModeToValue(raw);
+            const qty = Math.max(1, Math.min(100, Number(slot.dataset.quantity) || 1));
+            const v = applyModeToValue(raw) * qty;
             total += Number(v) || 0;
         });
         totalElement.textContent = formatNumberForDisplay(total);
@@ -373,6 +392,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const slot = e.target.closest('.item-slot');
         if (!slot) return;
 
+        // If the click originated from quantity controls, ignore so buttons/inputs handle it
+        if (e.target.closest('.qty-control')) return;
+
         if (slot.classList.contains('filled')) {
             // Remove the item
             removeItemFromSlot(slot);
@@ -448,6 +470,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners
     yourGrid.addEventListener('click', handleSlotClick);
     theirGrid.addEventListener('click', handleSlotClick);
+    // Quantity controls delegation
+    [yourGrid, theirGrid].forEach(grid => {
+        grid.addEventListener('click', (e) => {
+            const dec = e.target.closest('.qty-decrease');
+            const inc = e.target.closest('.qty-increase');
+            if (!dec && !inc) return;
+            const slot = e.target.closest('.item-slot');
+            if (!slot) return;
+            const input = slot.querySelector('.qty-input');
+            const current = Number(input?.value) || 1;
+            if (dec) setSlotQuantity(slot, current - 1);
+            if (inc) setSlotQuantity(slot, current + 1);
+        });
+
+        grid.addEventListener('input', (e) => {
+            const input = e.target.closest('.qty-input');
+            if (!input) return;
+            const slot = e.target.closest('.item-slot');
+            if (!slot) return;
+            // allow typing but clamp on blur via setSlotQuantity
+            const val = Number(input.value);
+            if (Number.isNaN(val)) return;
+            if (val > 100) input.value = '100';
+            if (val < 1) input.value = '1';
+            setSlotQuantity(slot, input.value);
+        });
+    });
     
     closeModalBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', e => {
